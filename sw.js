@@ -1,9 +1,10 @@
 // Service Worker — Coach Fitness PWA
 // Cache de l'app shell + réception des notifications push
 
-const CACHE = 'coach-fitness-v1';
+const CACHE = 'coach-fitness-v2';
 const ASSETS = [
-  './coach-fitness.html',
+  './',
+  './index.html',
   './manifest.webmanifest',
   './icon-192.png',
   './icon-512.png',
@@ -46,7 +47,7 @@ self.addEventListener('push', e => {
       icon: './icon-192.png',
       badge: './icon-192.png',
       tag: data.tag || 'coach-fitness',
-      data: { url: './coach-fitness.html' }
+      data: { url: './index.html' }
     })
   );
 });
@@ -56,7 +57,7 @@ self.addEventListener('notificationclick', e => {
   e.waitUntil(
     clients.matchAll({ type: 'window', includeUncontrolled: true }).then(list => {
       for (const c of list) { if ('focus' in c) return c.focus(); }
-      return clients.openWindow('./coach-fitness.html');
+      return clients.openWindow('./index.html');
     })
   );
 });

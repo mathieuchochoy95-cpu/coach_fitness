@@ -2,7 +2,7 @@
   "name": "Coach Fitness",
   "short_name": "Coach Fit",
   "description": "Calories, macros, entraînement et suivi de poids — maintien, sèche, prise de masse & recomposition",
-  "start_url": "./coach-fitness.html",
+  "start_url": "./",
   "scope": "./",
   "display": "standalone",
   "background_color": "#0d1117",

@@ -1,0 +1,20 @@
+name: Notifications programmées
+
+on:
+  schedule:
+    # Toutes les 15 min entre 5h et 18h59 UTC (couvre 8h17, 9h et 19h15 heure de Paris, été comme hiver)
+    - cron: '0,15,30,45 5-18 * * *'
+  workflow_dispatch: {} # permet de tester manuellement depuis l'onglet Actions
+
+jobs:
+  send:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 24
+      - run: npm install web-push@3.6.7 --no-save
+      - run: node scripts/send.js
+        env:
+          VAPID_PRIVATE_KEY: ${{ secrets.VAPID_PRIVATE_KEY }}

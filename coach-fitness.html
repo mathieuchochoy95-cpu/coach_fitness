@@ -1,0 +1,1502 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Coach Fitness — Calories, Macros & Pas</title>
+<!-- v2.0 — PWA -->
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#0d1117">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Coach Fit">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<style>
+  :root{
+    --bg:#0d1117; --bg2:#131a24; --card:#1a2230; --card2:#212b3d;
+    --border:#2b3648; --txt:#e8edf4; --muted:#8b98ab;
+    --green:#22c55e; --green-d:#16a34a; --orange:#f97316; --blue:#3b82f6;
+    --red:#ef4444; --yellow:#eab308; --purple:#a78bfa;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;font-family:'Segoe UI',system-ui,-apple-system,sans-serif}
+  body{background:var(--bg);color:var(--txt);min-height:100vh}
+  .wrap{max-width:1100px;margin:0 auto;padding:20px 16px 60px}
+
+  header{text-align:center;padding:28px 0 18px}
+  header h1{font-size:1.9rem;letter-spacing:.5px}
+  header h1 span{color:var(--green)}
+  header p{color:var(--muted);margin-top:6px;font-size:.95rem}
+
+  .tabs{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;margin:18px 0 26px}
+  .tab-btn{background:var(--card);border:1px solid var(--border);color:var(--muted);
+    padding:10px 18px;border-radius:999px;cursor:pointer;font-size:.92rem;font-weight:600;transition:.2s}
+  .tab-btn:hover{color:var(--txt);border-color:var(--green)}
+  .tab-btn.active{background:var(--green);border-color:var(--green);color:#04140a}
+  .tab{display:none;animation:fade .25s ease}
+  .tab.active{display:block}
+  @keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+
+  .card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:22px;margin-bottom:18px}
+  .card h2{font-size:1.15rem;margin-bottom:14px;display:flex;align-items:center;gap:8px}
+  .card h2 .dot{width:10px;height:10px;border-radius:50%;background:var(--green);display:inline-block}
+
+  .grid{display:grid;gap:14px}
+  .grid.c2{grid-template-columns:repeat(auto-fit,minmax(240px,1fr))}
+  .grid.c3{grid-template-columns:repeat(auto-fit,minmax(280px,1fr))}
+  .grid.c4{grid-template-columns:repeat(auto-fit,minmax(160px,1fr))}
+
+  label{display:block;font-size:.82rem;color:var(--muted);margin-bottom:6px;font-weight:600;text-transform:uppercase;letter-spacing:.4px}
+  input,select{width:100%;background:var(--bg2);border:1px solid var(--border);color:var(--txt);
+    padding:11px 13px;border-radius:10px;font-size:1rem;outline:none;transition:.2s}
+  input:focus,select:focus{border-color:var(--green)}
+  .btn{background:linear-gradient(135deg,var(--green),var(--green-d));color:#04140a;border:none;
+    padding:13px 26px;border-radius:12px;font-size:1rem;font-weight:700;cursor:pointer;transition:.2s;width:100%}
+  .btn:hover{transform:translateY(-1px);filter:brightness(1.1)}
+  .btn.secondary{background:var(--card2);color:var(--txt);border:1px solid var(--border)}
+  .btn.small{width:auto;padding:9px 18px;font-size:.88rem}
+  .btn.danger{background:none;border:1px solid var(--red);color:var(--red)}
+
+  .stat{background:var(--bg2);border:1px solid var(--border);border-radius:14px;padding:16px;text-align:center}
+  .stat .val{font-size:1.7rem;font-weight:800;margin:4px 0}
+  .stat .lbl{font-size:.78rem;color:var(--muted);text-transform:uppercase;letter-spacing:.5px}
+  .stat .sub{font-size:.8rem;color:var(--muted)}
+  .g{color:var(--green)} .o{color:var(--orange)} .b{color:var(--blue)} .y{color:var(--yellow)} .p{color:var(--purple)} .r{color:var(--red)}
+
+  .goal-card{border-radius:16px;padding:20px;border:1px solid var(--border);background:var(--card)}
+  .goal-card.maintien{border-top:4px solid var(--blue)}
+  .goal-card.seche{border-top:4px solid var(--orange)}
+  .goal-card.pdm{border-top:4px solid var(--green)}
+  .goal-card.recomp{border-top:4px solid var(--purple)}
+  .goal-card h3{font-size:1.05rem;margin-bottom:2px}
+  .goal-card .kcal{font-size:2.1rem;font-weight:800;margin:10px 0 2px}
+  .goal-card .desc{font-size:.82rem;color:var(--muted);margin-bottom:12px}
+  .macro-row{display:flex;justify-content:space-between;align-items:center;font-size:.9rem;margin:8px 0 4px}
+  .bar{height:8px;border-radius:6px;background:var(--bg2);overflow:hidden}
+  .bar>div{height:100%;border-radius:6px}
+  .mini-sel{margin-top:12px}
+  .mini-sel select{padding:8px 10px;font-size:.88rem}
+
+  table{width:100%;border-collapse:collapse;font-size:.9rem}
+  th,td{padding:10px 8px;text-align:center;border-bottom:1px solid var(--border)}
+  th{color:var(--muted);font-size:.78rem;text-transform:uppercase;letter-spacing:.5px}
+  td:first-child,th:first-child{text-align:left}
+
+  .pill{display:inline-block;padding:3px 10px;border-radius:999px;font-size:.75rem;font-weight:700}
+  .pill.g{background:rgba(34,197,94,.15);color:var(--green)}
+  .pill.o{background:rgba(249,115,22,.15);color:var(--orange)}
+  .pill.b{background:rgba(59,130,246,.15);color:var(--blue)}
+
+  .empty{text-align:center;color:var(--muted);padding:30px 10px;font-size:.92rem}
+  .note{font-size:.8rem;color:var(--muted);margin-top:12px;line-height:1.5}
+  .flex{display:flex;gap:10px;align-items:end;flex-wrap:wrap}
+  .flex>div{flex:1;min-width:140px}
+  canvas{width:100%;background:var(--bg2);border-radius:12px;border:1px solid var(--border)}
+  .imc-scale{display:flex;height:10px;border-radius:6px;overflow:hidden;margin-top:10px}
+  .imc-scale div{flex:1}
+  .imc-marker{font-size:.8rem;color:var(--muted);margin-top:6px}
+  .weight-list{max-height:220px;overflow-y:auto}
+  .set-input{width:52px;text-align:center;padding:8px 2px;font-size:.9rem}
+  .exo-row{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid var(--border);flex-wrap:wrap}
+  .exo-row .exo-name{flex:1;min-width:170px;font-size:.9rem}
+  .exo-row .exo-target{font-size:.8rem;color:var(--orange);font-weight:700;white-space:nowrap}
+  .exo-sets{display:flex;gap:5px}
+  .day-head{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:4px}
+  .day-done{background:var(--card2);border:1px solid var(--border);color:var(--muted);padding:8px 16px;border-radius:999px;cursor:pointer;font-weight:700;font-size:.85rem}
+  .day-done.on{background:var(--green);border-color:var(--green);color:#04140a}
+  .warmup{font-size:.78rem;color:var(--muted);background:var(--bg2);border-radius:8px;padding:8px 10px;margin:8px 0}
+  .week-badge{background:var(--orange);color:#1a0d02;font-weight:800;padding:6px 14px;border-radius:999px;font-size:.9rem}
+  .week-badge.deload{background:var(--blue);color:#041022}
+  .info-btn{background:none;border:1px solid var(--border);color:var(--muted);border-radius:6px;padding:2px 8px;font-size:.72rem;cursor:pointer;white-space:nowrap}
+  .info-btn:hover{border-color:var(--green);color:var(--green)}
+  .exo-info{display:none;background:var(--bg2);border-left:3px solid var(--green);border-radius:8px;padding:10px 12px;font-size:.83rem;color:var(--muted);margin:6px 0 10px;line-height:1.65}
+  .exo-info.open{display:block}
+  .lexique dt{color:var(--orange);font-weight:700;margin-top:8px;font-size:.88rem}
+  .lexique dd{margin:2px 0 0;font-size:.85rem;color:var(--muted);line-height:1.5}
+  #recupTimer{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:var(--green);color:#04140a;
+    font-weight:800;font-size:1.5rem;padding:14px 26px;border-radius:999px;z-index:99;
+    box-shadow:0 8px 30px rgba(0,0,0,.55);display:flex;gap:16px;align-items:center}
+  #recupTimer.fini{background:var(--orange)}
+  #recupTimer button{background:none;border:none;font-size:1.2rem;cursor:pointer;color:#04140a;font-weight:800}
+  .wl-row{display:flex;justify-content:space-between;align-items:center;padding:8px 4px;border-bottom:1px solid var(--border);font-size:.9rem}
+  .wl-row button{background:none;border:none;color:var(--red);cursor:pointer;font-size:1rem}
+  .hidden{display:none!important}
+  footer{text-align:center;color:var(--muted);font-size:.78rem;margin-top:30px;line-height:1.6}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <h1>🔥 COACH <span>FITNESS</span></h1>
+  <p>Calories, macros, pas & entraînement — maintien, sèche, prise de masse & recomposition</p>
+</header>
+
+<div class="tabs">
+  <button class="tab-btn active" data-tab="profil">👤 Profil & Résultats</button>
+  <button class="tab-btn" data-tab="objectifs">🎯 Mes objectifs</button>
+  <button class="tab-btn" data-tab="repas">🍽️ Répartition repas</button>
+  <button class="tab-btn" data-tab="training">🏋️ Entraînement</button>
+  <button class="tab-btn" data-tab="suivi">📈 Suivi de poids</button>
+  <button class="tab-btn" data-tab="outils">🛠️ Outils</button>
+  <button class="tab-btn" data-tab="reglages">⚙️ Réglages</button>
+</div>
+
+<!-- ============ TAB PROFIL ============ -->
+<div class="tab active" id="tab-profil">
+  <div class="card">
+    <h2><span class="dot"></span>Mon profil</h2>
+    <div class="grid c4">
+      <div><label>Sexe</label>
+        <select id="sexe"><option value="h">Homme</option><option value="f">Femme</option></select></div>
+      <div><label>Âge (ans)</label><input type="number" id="age" min="15" max="90" placeholder="ex: 30"></div>
+      <div><label>Poids (kg)</label><input type="number" id="poids" min="35" max="250" step="0.1" placeholder="ex: 75"></div>
+      <div><label>Taille (cm)</label><input type="number" id="taille" min="120" max="230" placeholder="ex: 178"></div>
+    </div>
+    <div style="margin-top:14px" class="grid c2">
+      <div><label>Niveau d'activité (hors pas quotidiens)</label>
+        <select id="activite">
+          <option value="1.2">Sédentaire — bureau, peu ou pas de sport</option>
+          <option value="1.375">Légèrement actif — sport 1 à 3×/semaine</option>
+          <option value="1.45">Sportif de bureau — sport 3 à 5×/semaine + travail assis</option>
+          <option value="1.55" selected>Modérément actif — sport 3 à 5×/semaine + quotidien actif</option>
+          <option value="1.6">Très sportif de bureau — sport 6 à 7×/semaine + travail assis</option>
+          <option value="1.725">Très actif — sport 6 à 7×/semaine + quotidien actif</option>
+          <option value="1.9">Extrêmement actif — travail physique + sport</option>
+        </select></div>
+      <div><label>Objectif principal</label>
+        <select id="objectifPrincipal">
+          <option value="maintien">⚖️ Maintien</option>
+          <option value="seche">🔥 Sèche (perte de gras)</option>
+          <option value="pdm">💪 Prise de masse</option>
+          <option value="recomp">🔄 Recomposition — sortir du skinny fat</option>
+        </select></div>
+    </div>
+    <div style="margin-top:14px" class="grid c2">
+      <div><label>🎚️ Ajustement calories (kcal/jour)</label>
+        <input type="number" id="ajust" step="50" min="-500" max="500" value="0" placeholder="0"></div>
+      <div style="display:flex;align-items:end"><p class="note" style="margin:0 0 4px">Laisse <b>0</b> au départ. Après 2 semaines de suivi : perte trop lente en sèche → <b>−100/−150</b> · perte trop rapide ou grosse fatigue → <b>+100</b> · pas de prise en PDM → <b>+100/+150</b>. S'applique à tous les objectifs et aux menus.</p></div>
+    </div>
+    <div style="margin-top:18px;display:flex;gap:10px;flex-wrap:wrap">
+      <button class="btn" style="flex:2;min-width:200px" onclick="calculer()">⚡ Calculer mes besoins</button>
+      <button class="btn secondary" style="flex:1;min-width:140px" onclick="resetProfil()">Réinitialiser</button>
+    </div>
+  </div>
+
+  <div id="resultats" class="hidden">
+    <div class="card">
+      <h2><span class="dot"></span>Mes résultats</h2>
+      <div class="grid c4">
+        <div class="stat"><div class="lbl">Métabolisme de base</div><div class="val b" id="rBmr">—</div><div class="sub">kcal / jour au repos</div></div>
+        <div class="stat"><div class="lbl">Dépense totale (TDEE)</div><div class="val g" id="rTdee">—</div><div class="sub" id="rTdeeSub">kcal brûlées / jour</div></div>
+        <div class="stat"><div class="lbl">IMC</div><div class="val y" id="rImc">—</div><div class="sub" id="rImcCat">—</div></div>
+        <div class="stat"><div class="lbl">Eau recommandée</div><div class="val p" id="rEau">—</div><div class="sub">litres / jour</div></div>
+      </div>
+      <div class="imc-scale">
+        <div style="background:#3b82f6"></div><div style="background:#22c55e"></div>
+        <div style="background:#eab308"></div><div style="background:#f97316"></div><div style="background:#ef4444"></div>
+      </div>
+      <div class="imc-marker">IMC : &lt;18.5 maigreur · 18.5–25 normal · 25–30 surpoids · 30–35 obésité · &gt;35 obésité sévère — <span id="rPoidsIdeal"></span></div>
+    </div>
+
+    <div class="card">
+      <h2><span class="dot" style="background:var(--orange)"></span>🚶 Mon objectif de pas quotidien</h2>
+      <div class="grid c3">
+        <div class="stat"><div class="lbl">Pas recommandés / jour</div><div class="val o" id="rPas">—</div><div class="sub" id="rPasWhy">—</div></div>
+        <div class="stat"><div class="lbl">Calories brûlées par ces pas</div><div class="val g" id="rPasKcal">—</div><div class="sub">kcal environ</div></div>
+        <div class="stat"><div class="lbl">Temps de marche estimé</div><div class="val b" id="rPasTemps">—</div><div class="sub" id="rPasKm">—</div></div>
+      </div>
+      <p class="note">💡 Astuce : fractionne tes pas (10–15 min de marche après chaque repas) — c'est excellent pour la glycémie et la digestion, et plus facile à tenir qu'une grande marche unique.</p>
+    </div>
+  </div>
+  <div class="empty" id="profilEmpty">Renseigne ton profil et clique sur <b>Calculer</b> pour voir tes résultats.</div>
+</div>
+
+<!-- ============ TAB OBJECTIFS ============ -->
+<div class="tab" id="tab-objectifs">
+  <div id="objectifsContent" class="hidden">
+    <div class="grid c3">
+      <div class="goal-card maintien">
+        <h3>⚖️ Maintien</h3>
+        <div class="desc">Stabiliser ton poids et tes performances</div>
+        <div class="kcal b" id="mKcal">—</div>
+        <div class="desc">kcal / jour</div>
+        <div id="mMacros"></div>
+      </div>
+      <div class="goal-card seche">
+        <h3>🔥 Sèche</h3>
+        <div class="desc">Perdre du gras en gardant le muscle</div>
+        <div class="kcal o" id="sKcal">—</div>
+        <div class="desc"><span id="sDeficit"></span> — perte estimée : <b id="sPerte">—</b></div>
+        <div id="sMacros"></div>
+        <div class="mini-sel"><label>Intensité de la sèche</label>
+          <select id="secheMode" onchange="calculer()">
+            <option value="15">Modérée (−15%) — durable, recommandé</option>
+            <option value="20" selected>Standard (−20%) — bon rythme</option>
+            <option value="25">Agressive (−25%) — court terme uniquement</option>
+          </select></div>
+      </div>
+      <div class="goal-card pdm">
+        <h3>💪 Prise de masse</h3>
+        <div class="desc">Construire du muscle en limitant le gras</div>
+        <div class="kcal g" id="pKcal">—</div>
+        <div class="desc"><span id="pSurplus"></span> — gain estimé : <b id="pGain">—</b></div>
+        <div id="pMacros"></div>
+        <div class="mini-sel"><label>Type de prise de masse</label>
+          <select id="pdmMode" onchange="calculer()">
+            <option value="10" selected>Propre (+10%) — minimum de gras</option>
+            <option value="15">Standard (+15%)</option>
+            <option value="20">Rapide (+20%) — plus de gras stocké</option>
+          </select></div>
+      </div>
+      <div class="goal-card recomp">
+        <h3>🔄 Recomposition <span class="pill" style="background:rgba(167,139,250,.15);color:var(--purple)">anti skinny fat</span></h3>
+        <div class="desc">Perdre du gras ET construire du muscle en même temps</div>
+        <div class="kcal p" id="rcKcal">—</div>
+        <div class="desc">kcal / jour (<span id="rcDeficit"></span>)</div>
+        <div id="rcMacros"></div>
+        <p class="note" style="margin-top:12px">🏋️ <b>Condition non négociable :</b> musculation 3–4×/semaine en surcharge progressive. Sans stimulus musculaire, ce léger déficit te fera juste maigrir — tu resteras skinny fat, en plus petit. Les protéines hautes (2,2 g/kg) + la muscu font tout le travail. Le poids sur la balance bougera peu : suis-toi plutôt au <b>miroir, photos et tour de taille</b>.</p>
+      </div>
+    </div>
+
+    <div class="card" style="margin-top:18px">
+      <h2><span class="dot"></span>Comparatif des 4 objectifs</h2>
+      <div style="overflow-x:auto">
+      <table id="comparatif">
+        <thead><tr><th>Objectif</th><th>Calories</th><th>Protéines</th><th>Glucides</th><th>Lipides</th><th>Évolution / semaine</th></tr></thead>
+        <tbody></tbody>
+      </table>
+      </div>
+      <p class="note">📌 Protéines calculées en g/kg de poids de corps (sèche 2,2 g/kg · maintien 1,8 g/kg · PDM 2,0 g/kg · recomposition 2,2 g/kg), lipides ~0,8–1 g/kg, le reste en glucides. 1 g de protéines ou glucides = 4 kcal, 1 g de lipides = 9 kcal.</p>
+    </div>
+  </div>
+  <div class="empty" id="objectifsEmpty">Calcule d'abord ton profil dans l'onglet <b>👤 Profil & Résultats</b>.</div>
+</div>
+
+<!-- ============ TAB REPAS ============ -->
+<div class="tab" id="tab-repas">
+  <div id="repasContent" class="hidden">
+    <div class="card">
+      <h2><span class="dot"></span>Répartition journalière — <span id="repasObjLabel" class="g"></span></h2>
+      <div style="max-width:320px;margin-bottom:14px"><label>Objectif affiché</label>
+        <select id="repasObj" onchange="renderRepas()">
+          <option value="maintien">⚖️ Maintien</option>
+          <option value="seche">🔥 Sèche</option>
+          <option value="pdm">💪 Prise de masse</option>
+          <option value="recomp">🔄 Recomposition — sortir du skinny fat</option>
+        </select></div>
+      <div style="overflow-x:auto">
+      <table id="repasTable">
+        <thead><tr><th>Repas</th><th>% du total</th><th>Calories</th><th>Protéines</th><th>Glucides</th><th>Lipides</th></tr></thead>
+        <tbody></tbody>
+      </table>
+      </div>
+    </div>
+    <div class="card">
+      <h2><span class="dot" style="background:var(--purple)"></span>🍳 Exemple de journée type — <span id="menuObjLabel" class="p"></span></h2>
+      <p class="note" style="margin:0 0 14px">Les quantités sont <b>automatiquement ajustées à TES calories</b>. Féculents pesés <b>crus</b>. Les matières grasses de cuisson (beurre, crème, huile) sont comptées — c'est souvent là que les calories "invisibles" se cachent.</p>
+      <div class="grid c2" id="menuGrid"></div>
+      <p class="note">🔁 Tu peux échanger : hauts de cuisse ↔ escalope de poulet (+1 €/j) ou dinde · thon ↔ sardines/maquereau en boîte (encore moins cher) · riz ↔ pâtes/semoule/patate douce (même poids cru) · beurre ↔ huile d'olive. Envie de saumon ou de steak ? 1-2 dîners/semaine en remplacement du duo œufs+thon (+1,50-2 €). Les légumes surgelés sont à volonté ou presque. 📌 Le fromage blanc est plafonné à <b>150 g/jour</b> (ta contrainte) — quantité fixe, seule la part de Bjorg et le reste des repas s'ajustent à tes calories.</p>
+    </div>
+    <div class="card">
+      <h2><span class="dot" style="background:var(--orange)"></span>Équivalences pratiques (pour ~30 g de protéines)</h2>
+      <div class="grid c4">
+        <div class="stat"><div class="val">🍗</div><div class="lbl">130 g de poulet</div></div>
+        <div class="stat"><div class="val">🥚</div><div class="lbl">5 œufs</div></div>
+        <div class="stat"><div class="val">🐟</div><div class="lbl">140 g de thon/cabillaud</div></div>
+        <div class="stat"><div class="val">🥛</div><div class="lbl">300 g de skyr / fromage blanc 0%</div></div>
+      </div>
+      <div class="grid c4" style="margin-top:12px">
+        <div class="stat"><div class="val">🍚</div><div class="lbl">50 g glucides = 65 g riz cru</div></div>
+        <div class="stat"><div class="val">🍝</div><div class="lbl">50 g glucides = 70 g pâtes crues</div></div>
+        <div class="stat"><div class="val">🥔</div><div class="lbl">50 g glucides = 280 g pommes de terre</div></div>
+        <div class="stat"><div class="val">🥑</div><div class="lbl">15 g lipides = ½ avocat ou 1 c.à.s d'huile</div></div>
+      </div>
+      <p class="note">⚖️ Pèse les féculents <b>crus</b> pour être précis. Priorise les aliments bruts : viandes maigres, poissons, œufs, riz, avoine, patate douce, légumes à volonté, huile d'olive, oléagineux.</p>
+    </div>
+  </div>
+  <div class="empty" id="repasEmpty">Calcule d'abord ton profil dans l'onglet <b>👤 Profil & Résultats</b>.</div>
+</div>
+
+<!-- ============ TAB ENTRAINEMENT ============ -->
+<div class="tab" id="tab-training">
+  <div class="card">
+    <div class="day-head">
+      <h2 style="margin:0"><span class="dot" style="background:var(--orange)"></span>Mon programme <span class="week-badge" id="twBadge">Semaine 1</span></h2>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <button class="btn small" onclick="TR.close()">✅ Clôturer la semaine → générer la suivante</button>
+        <button class="btn danger small" onclick="TR.reset()">🗑️ Réinitialiser</button>
+      </div>
+    </div>
+    <p class="note" id="twGoal" style="margin-top:10px;border-left:3px solid var(--orange);padding-left:10px"></p>
+    <p class="note" id="twInfo" style="margin-top:10px"></p>
+    <p class="note" id="twLoad" style="margin-top:6px"></p>
+    <p class="note">📌 Remplis tes reps réelles dans les cases (1 case = 1 série), coche "Séance faite", puis clôture la semaine : les cibles de la semaine suivante s'ajustent automatiquement. Un doute sur une consigne (max −2, sous-max, tempo...) ? Clique sur <b>ℹ️ détails</b> à côté de l'exercice. RPE = difficulté de la séance : 5 facile · 7 dur maîtrisé · 9 très dur. <b>Décharge automatique toutes les 5 semaines</b> (4 si tu es en sèche agressive) : volume réduit ~40% pour récupérer et relancer la progression. ⚠️ Vu tes antécédents tibia/mollet : si douleur en course, remplace le samedi par du vélo ou de la marche rapide et note-le.</p>
+  </div>
+  <div id="trainDays"></div>
+  <div class="card">
+    <h2><span class="dot" style="background:var(--orange)"></span>⏱️ Test VMA — demi-Cooper (tous les 2-3 mois)</h2>
+    <p class="note" style="margin-bottom:12px">Après 15 min d'échauffement progressif, cours la <b>plus grande distance possible en 6 minutes</b> (piste ou appli GPS). Fais-le <b>le samedi d'une semaine de décharge</b>, jambes fraîches — il remplace la course du jour. Tes allures de fractionné et d'endurance se recalibrent automatiquement.</p>
+    <div class="flex">
+      <div><label>Distance parcourue en 6 min (mètres)</label><input type="number" id="vmaDist" min="600" max="3000" placeholder="ex : 1550"></div>
+      <div style="flex:0"><button class="btn small" onclick="TR.vma()">💾 Enregistrer le test</button></div>
+    </div>
+    <div class="grid c3" style="margin-top:14px">
+      <div class="stat"><div class="lbl">Ma VMA</div><div class="val o" id="vmaVal">—</div><div class="sub">km/h</div></div>
+      <div class="stat"><div class="lbl">Allure fractionné (1 min rapide)</div><div class="val g" id="vmaFrac">—</div><div class="sub">km/h</div></div>
+      <div class="stat"><div class="lbl">Allure endurance fondamentale</div><div class="val b" id="vmaEF">—</div><div class="sub">min/km</div></div>
+    </div>
+    <p class="note" id="vmaDate" style="margin-top:10px"></p>
+  </div>
+  <div class="card">
+    <h2><span class="dot" style="background:var(--blue)"></span>📜 Historique des semaines</h2>
+    <div id="trainHistory"><div class="empty">Aucune semaine clôturée pour le moment.</div></div>
+  </div>
+</div>
+
+<!-- ============ TAB SUIVI ============ -->
+<div class="tab" id="tab-suivi">
+  <div class="card">
+    <h2><span class="dot"></span>Ajouter une pesée</h2>
+    <div class="flex">
+      <div><label>Date</label><input type="date" id="wDate"></div>
+      <div><label>Poids (kg)</label><input type="number" id="wPoids" step="0.1" min="35" max="250" placeholder="ex: 74.6"></div>
+      <div style="flex:0"><button class="btn small" onclick="addWeight()">+ Ajouter</button></div>
+    </div>
+    <p class="note">📅 Pèse-toi <b>3× par semaine</b> (ex : lundi · mercredi · vendredi), le matin à jeun après être passé aux toilettes. À la 3ᵉ pesée de la semaine, le bloc Analyse ci-dessous te dit comment agir.</p>
+  </div>
+  <div class="card">
+    <h2><span class="dot" style="background:var(--purple)"></span>🧠 Analyse & conseil de la semaine</h2>
+    <div id="coachPoids" class="note" style="font-size:.95rem;line-height:1.7">—</div>
+  </div>
+  <div class="card">
+    <h2><span class="dot" style="background:var(--blue)"></span>Ma courbe de poids</h2>
+    <canvas id="chart" height="260"></canvas>
+    <div class="grid c3" style="margin-top:14px">
+      <div class="stat"><div class="lbl">Dernier poids</div><div class="val b" id="wLast">—</div><div class="sub">kg</div></div>
+      <div class="stat"><div class="lbl">Évolution totale</div><div class="val" id="wDelta">—</div><div class="sub" id="wDeltaSub">depuis la 1ʳᵉ pesée</div></div>
+      <div class="stat"><div class="lbl">Tendance / semaine</div><div class="val y" id="wTrend">—</div><div class="sub">moyenne sur les 4 dernières semaines</div></div>
+    </div>
+  </div>
+  <div class="card">
+    <h2><span class="dot" style="background:var(--red)"></span>Historique</h2>
+    <div class="weight-list" id="wList"><div class="empty">Aucune pesée enregistrée.</div></div>
+    <div style="margin-top:12px"><button class="btn danger small" onclick="clearWeights()">🗑️ Tout effacer</button></div>
+  </div>
+</div>
+
+<!-- ============ TAB OUTILS ============ -->
+<div class="tab" id="tab-outils">
+  <div class="card">
+    <h2><span class="dot" style="background:var(--orange)"></span>🚶 Convertisseur pas ↔ calories</h2>
+    <p class="note" style="margin:0 0 14px">Basé sur ton poids (<span id="convPoids">renseigne ton profil</span>). Estimation : plus tu es lourd, plus chaque pas brûle de calories.</p>
+    <div class="grid c2">
+      <div class="stat">
+        <label style="text-align:left">Nombre de pas</label>
+        <input type="number" id="convPas" placeholder="ex: 10000" oninput="convPasToKcal()">
+        <div class="val g" id="convPasRes" style="margin-top:10px">—</div><div class="sub">kcal brûlées</div>
+      </div>
+      <div class="stat">
+        <label style="text-align:left">Calories à brûler</label>
+        <input type="number" id="convKcal" placeholder="ex: 300" oninput="convKcalToPas()">
+        <div class="val o" id="convKcalRes" style="margin-top:10px">—</div><div class="sub">pas nécessaires</div>
+      </div>
+    </div>
+  </div>
+  <div class="card">
+    <h2><span class="dot" style="background:var(--blue)"></span>🍔 « Combien de pas pour brûler ça ? »</h2>
+    <div style="overflow-x:auto"><table id="foodTable">
+      <thead><tr><th>Aliment</th><th>Calories</th><th>Pas équivalents</th><th>Marche</th></tr></thead>
+      <tbody></tbody>
+    </table></div>
+  </div>
+  <div class="card">
+    <h2><span class="dot" style="background:var(--purple)"></span>⏱️ Estimation durée d'objectif</h2>
+    <div class="flex">
+      <div><label>Poids cible (kg)</label><input type="number" id="cibleKg" step="0.1" placeholder="ex: 70"></div>
+      <div style="flex:0"><button class="btn small" onclick="estimerDuree()">Estimer</button></div>
+    </div>
+    <div id="dureeRes" class="note" style="font-size:.95rem;margin-top:14px"></div>
+  </div>
+</div>
+
+<!-- ============ TAB REGLAGES ============ -->
+<div class="tab" id="tab-reglages">
+  <div class="card">
+    <h2><span class="dot" style="background:var(--blue)"></span>📲 Installer l'appli sur ton iPhone</h2>
+    <p class="note" style="font-size:.9rem;line-height:1.8">
+      1. Ouvre ce site dans <b>Safari</b> (pas Chrome !)<br>
+      2. Touche le bouton <b>Partager</b> (carré avec flèche ↑)<br>
+      3. Descends et touche <b>« Sur l'écran d'accueil »</b> puis <b>Ajouter</b><br>
+      4. Ouvre l'appli <b>depuis sa nouvelle icône</b> — c'est obligatoire pour que les notifications fonctionnent (règle Apple, iOS 16.4 minimum).
+    </p>
+  </div>
+  <div class="card">
+    <h2><span class="dot" style="background:var(--orange)"></span>🔔 Notifications push</h2>
+    <p class="note" id="notifStatus" style="font-size:.9rem">Installe d'abord l'appli sur l'écran d'accueil, ouvre-la depuis l'icône, puis active.</p>
+    <button class="btn small" style="margin-top:10px" onclick="enableNotifs()">🔔 Activer les notifications sur cet appareil</button>
+    <div id="subBox" class="hidden" style="margin-top:14px">
+      <label>Ton code d'abonnement (à coller dans subs.json sur GitHub — voir guide)</label>
+      <textarea id="subJson" readonly style="width:100%;height:120px;background:var(--bg2);border:1px solid var(--border);color:var(--txt);border-radius:10px;padding:10px;font-size:.72rem;font-family:monospace"></textarea>
+      <button class="btn secondary small" style="margin-top:8px" onclick="copySub()">📋 Copier le code</button>
+    </div>
+    <p class="note">Rappels programmés : pesée lun/mer/ven 8h17 · séances lun/mer/ven 19h15 · course sam 9h (à faire dans la journée) · test demi-Cooper tous les 70 jours (sam 9h). Modifiables dans <b>scripts/send.js</b> sur ton GitHub. Arrivée entre l'heure pile et ~15 min après.</p>
+  </div>
+  <div class="card">
+    <h2><span class="dot"></span>☁️ Sauvegarde cloud (Firebase)</h2>
+    <p class="note" id="cloudStatus" style="font-size:.9rem">Chargement...</p>
+    <div id="cloudForm" style="margin-top:12px">
+      <div class="flex">
+        <div><label>Email</label><input type="email" id="cloudEmail" placeholder="ton@email.fr" autocomplete="username"></div>
+        <div><label>Mot de passe (6 caractères min.)</label><input type="password" id="cloudPass" placeholder="••••••••" autocomplete="current-password"></div>
+      </div>
+      <div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap">
+        <button class="btn small" onclick="cfCloud.login()">Se connecter</button>
+        <button class="btn secondary small" onclick="cfCloud.signup()">Créer mon compte</button>
+      </div>
+    </div>
+    <div id="cloudLogged" class="hidden" style="margin-top:12px">
+      <p class="note">Connecté : <b id="cloudEmailShow"></b> — tes données (profil, pesées, entraînement, VMA) se sauvegardent automatiquement à chaque modification.</p>
+      <button class="btn danger small" style="margin-top:8px" onclick="cfCloud.logout()">Se déconnecter</button>
+    </div>
+  </div>
+</div>
+
+<div id="recupTimer" class="hidden">⏱ <span id="rtVal">0</span> <button onclick="TR.stopTimer()">✕</button></div>
+
+<footer>
+  ⚠️ Ces valeurs sont des <b>estimations</b> (formule de Mifflin-St Jeor). Ajuste tes calories de ±100–150 kcal toutes les 2 semaines selon ta courbe de poids réelle.<br>
+  Cette appli ne remplace pas l'avis d'un médecin ou d'un diététicien, notamment en cas de pathologie. Tes données restent stockées <b>localement</b> dans ton navigateur.
+</footer>
+</div>
+
+<script>
+// ================= ÉTAT =================
+let P = null; // profil calculé
+
+const $ = id => document.getElementById(id);
+const fmt = n => Math.round(n).toLocaleString('fr-FR');
+
+// ================= TABS =================
+document.querySelectorAll('.tab-btn').forEach(b => b.addEventListener('click', () => {
+  document.querySelectorAll('.tab-btn').forEach(x => x.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(x => x.classList.remove('active'));
+  b.classList.add('active');
+  $('tab-' + b.dataset.tab).classList.add('active');
+  if (b.dataset.tab === 'suivi') renderChart();
+}));
+
+// ================= CALCULS =================
+function kcalPerStep(kg){ return kg * 0.0005; } // ≈ 0.04 kcal/pas pour 80 kg
+
+function calculer(){
+  const sexe = $('sexe').value;
+  const age = +$('age').value, poids = +$('poids').value, taille = +$('taille').value;
+  const act = +$('activite').value;
+  if (!age || !poids || !taille){ alert('Renseigne ton âge, ton poids et ta taille 😉'); return; }
+
+  const bmr = 10*poids + 6.25*taille - 5*age + (sexe==='h' ? 5 : -161);
+  const ajust = Math.max(-500, Math.min(500, +$('ajust').value || 0));
+  const tdee = bmr * act + ajust;
+  const imc = poids / Math.pow(taille/100, 2);
+
+  const secheP = +$('secheMode').value, pdmP = +$('pdmMode').value;
+  const kSeche = tdee * (1 - secheP/100);
+  const kPdm = tdee * (1 + pdmP/100);
+
+  function macros(kcal, protKg, lipKg){
+    const prot = protKg * poids, lip = lipKg * poids;
+    let gluc = (kcal - prot*4 - lip*9) / 4;
+    if (gluc < 50) gluc = 50; // plancher santé
+    return {prot, lip, gluc, kcal};
+  }
+  P = {
+    sexe, age, poids, taille, act, bmr, tdee, imc, secheP, pdmP,
+    maintien: macros(tdee, 1.8, 1.0),
+    seche:    macros(kSeche, 2.2, 0.8),
+    pdm:      macros(kPdm, 2.0, 1.0),
+    recomp:   macros(tdee * 0.92, 2.2, 0.9),
+    objectif: $('objectifPrincipal').value
+  };
+  saveProfil();
+  renderResultats(); renderObjectifs(); renderRepas(); renderOutils(); renderTraining(); renderCoachPoids();
+  $('resultats').classList.remove('hidden'); $('profilEmpty').classList.add('hidden');
+  $('objectifsContent').classList.remove('hidden'); $('objectifsEmpty').classList.add('hidden');
+  $('repasContent').classList.remove('hidden'); $('repasEmpty').classList.add('hidden');
+}
+
+function renderResultats(){
+  $('rBmr').textContent = fmt(P.bmr);
+  $('rTdee').textContent = fmt(P.tdee);
+  const aj = +$('ajust').value || 0;
+  $('rTdeeSub').textContent = aj ? 'kcal / jour (ajusté de ' + (aj>0?'+':'') + aj + ')' : 'kcal brûlées / jour';
+  $('rImc').textContent = P.imc.toFixed(1);
+  const cats = [[18.5,'Maigreur','b'],[25,'Corpulence normale','g'],[30,'Surpoids','y'],[35,'Obésité','o'],[99,'Obésité sévère','r']];
+  const c = cats.find(x => P.imc < x[0]);
+  $('rImcCat').textContent = c[1];
+  $('rImc').className = 'val ' + c[2];
+  const t2 = Math.pow(P.taille/100,2);
+  $('rPoidsIdeal').textContent = `Ton poids "IMC normal" : ${ (18.5*t2).toFixed(0) }–${ (25*t2).toFixed(0) } kg`;
+  $('rEau').textContent = (P.poids * 0.035).toFixed(1);
+
+  // Objectif de pas selon objectif principal + niveau d'activité
+  const obj = P.objectif;
+  let pas, why;
+  if (obj === 'seche'){ pas = 10000; why = 'Booste ton déficit calorique sans stress'; }
+  else if (obj === 'pdm'){ pas = 7000; why = 'Santé cardio sans trop puiser dans ton surplus'; }
+  else if (obj === 'recomp'){ pas = 9000; why = 'Aide à perdre le gras pendant que la muscu construit'; }
+  else { pas = 8000; why = 'Le sweet spot santé validé par les études'; }
+  if (P.act <= 1.2) pas += 2000; // sédentaire : compenser
+  $('rPas').textContent = fmt(pas);
+  $('rPasWhy').textContent = why;
+  const kc = pas * kcalPerStep(P.poids);
+  $('rPasKcal').textContent = fmt(kc);
+  const min = Math.round(pas/100); // ~100 pas/min
+  $('rPasTemps').textContent = min >= 60 ? Math.floor(min/60)+'h'+String(min%60).padStart(2,'0') : min+' min';
+  $('rPasKm').textContent = '≈ ' + (pas*0.00075).toFixed(1) + ' km';
+}
+
+function macroBlock(m){
+  const pj = Math.round(m.prot*4/m.kcal*100), gj = Math.round(m.gluc*4/m.kcal*100), lj = Math.round(m.lip*9/m.kcal*100);
+  return `
+    <div class="macro-row"><span>🥩 Protéines</span><b>${fmt(m.prot)} g <span style="color:var(--muted);font-weight:400">(${pj}%)</span></b></div>
+    <div class="bar"><div style="width:${pj}%;background:var(--red)"></div></div>
+    <div class="macro-row"><span>🍚 Glucides</span><b>${fmt(m.gluc)} g <span style="color:var(--muted);font-weight:400">(${gj}%)</span></b></div>
+    <div class="bar"><div style="width:${gj}%;background:var(--yellow)"></div></div>
+    <div class="macro-row"><span>🥑 Lipides</span><b>${fmt(m.lip)} g <span style="color:var(--muted);font-weight:400">(${lj}%)</span></b></div>
+    <div class="bar"><div style="width:${lj}%;background:var(--green)"></div></div>`;
+}
+
+function renderObjectifs(){
+  $('mKcal').textContent = fmt(P.maintien.kcal);
+  $('sKcal').textContent = fmt(P.seche.kcal);
+  $('pKcal').textContent = fmt(P.pdm.kcal);
+  $('rcKcal').textContent = fmt(P.recomp.kcal);
+  $('rcDeficit').textContent = 'léger déficit de ' + fmt(P.tdee - P.recomp.kcal) + ' kcal/j';
+  $('mMacros').innerHTML = macroBlock(P.maintien);
+  $('sMacros').innerHTML = macroBlock(P.seche);
+  $('pMacros').innerHTML = macroBlock(P.pdm);
+  $('rcMacros').innerHTML = macroBlock(P.recomp);
+
+  const defKcal = P.tdee - P.seche.kcal, surKcal = P.pdm.kcal - P.tdee;
+  $('sDeficit').textContent = `déficit de ${fmt(defKcal)} kcal/j`;
+  $('sPerte').textContent = (defKcal*7/7700).toFixed(2).replace('.',',') + ' kg/sem';
+  $('pSurplus').textContent = `surplus de ${fmt(surKcal)} kcal/j`;
+  $('pGain').textContent = '+' + (surKcal*7/7700).toFixed(2).replace('.',',') + ' kg/sem';
+
+  const rows = [
+    ['⚖️ Maintien', P.maintien, '±0 kg', 'b'],
+    ['🔥 Sèche', P.seche, '−'+(defKcal*7/7700).toFixed(2).replace('.',',')+' kg', 'o'],
+    ['💪 Prise de masse', P.pdm, '+'+(surKcal*7/7700).toFixed(2).replace('.',',')+' kg', 'g'],
+    ['🔄 Recomposition', P.recomp, '−gras / +muscle', 'b']
+  ];
+  $('comparatif').querySelector('tbody').innerHTML = rows.map(([n,m,ev,cl]) =>
+    `<tr><td>${n}</td><td><b>${fmt(m.kcal)}</b> kcal</td><td>${fmt(m.prot)} g</td><td>${fmt(m.gluc)} g</td><td>${fmt(m.lip)} g</td><td><span class="pill ${cl}">${ev}</span></td></tr>`
+  ).join('');
+}
+
+// ================= REPAS =================
+const REPAS = [
+  ['🌅 Petit-déjeuner', .30], ['☀️ Déjeuner', .40], ['🌙 Dîner', .30]
+];
+function renderRepas(){
+  if (!P) return;
+  const key = $('repasObj').value;
+  const labels = {maintien:'⚖️ Maintien', seche:'🔥 Sèche', pdm:'💪 Prise de masse', recomp:'🔄 Recomposition'};
+  $('repasObjLabel').textContent = labels[key] + ' — ' + fmt(P[key].kcal) + ' kcal';
+  const m = P[key];
+  $('repasTable').querySelector('tbody').innerHTML = REPAS.map(([n,f]) =>
+    `<tr><td>${n}</td><td>${Math.round(f*100)}%</td><td><b>${fmt(m.kcal*f)}</b> kcal</td><td>${fmt(m.prot*f)} g</td><td>${fmt(m.gluc*f)} g</td><td>${fmt(m.lip*f)} g</td></tr>`
+  ).join('') + `<tr style="color:var(--muted)"><td><b>Total</b></td><td>100%</td><td><b>${fmt(m.kcal)}</b></td><td>${fmt(m.prot)} g</td><td>${fmt(m.gluc)} g</td><td>${fmt(m.lip)} g</td></tr>`;
+  renderMenu(key);
+}
+
+// ================= MENUS TYPES =================
+// item : [nom, quantité, unité('g','ml','u'), kcal, prot, gluc, lip, prix€, fixe(1=quantité non ajustée, ex: plafond fromage blanc 150g/j)]
+const MENUS = {
+  maintien: [
+    ['🌅 Petit-déjeuner', [
+      ["Fromage blanc 0% (plafond 150 g/j)", 150,'g',67,12,6,0.3,0.30,1],
+      ["Whey (mélangée dans le fromage blanc)", 30,'g',115,24,2,1.5,0.75,1],
+      ["Bjorg croustillant chocolat", 90,'g',407,7.7,55.8,15.8,0.75]
+    ]],
+    ['☀️ Déjeuner', [
+      ["Hauts de cuisse de poulet (sans peau)", 170,'g',206,30.1,0,9.7,1.36],
+      ["Pâtes (poids cru)", 150,'g',540,18,108,2.7,0.24],
+      ["Beurre (dans les pâtes)", 10,'g',75,0,0,8.2,0.10],
+      ["Fromage râpé", 20,'g',80,5,0.5,6.5,0.18],
+      ["Légumes verts (surgelés)", 200,'g',60,4,8,0.5,0.50],
+      ["Pomme", 1,'u',80,0.3,20,0.2,0.50]
+    ]],
+    ['🌙 Dîner', [
+      ["Œufs entiers (omelette)", 2,'u',180,15,1,13,0.66],
+      ["Thon en boîte (1 boîte égouttée)", 140,'g',154,35,0,1.4,1.30],
+      ["Riz (poids cru)", 100,'g',350,7,76.7,1,0.22],
+      ["Légumes verts (surgelés)", 200,'g',60,4,8,0.5,0.50],
+      ["Chocolat noir", 10,'g',55,0.8,4.6,4.3,0.10],
+      ["Banane (dessert)", 1,'u',105,1.3,27,0.4,0.25]
+    ]]
+  ],
+  seche: [
+    ['🌅 Petit-déjeuner', [
+      ["Fromage blanc 0% (plafond 150 g/j)", 150,'g',67,12,6,0.3,0.30,1],
+      ["Whey (mélangée dans le fromage blanc)", 30,'g',115,24,2,1.5,0.75,1],
+      ["Bjorg croustillant chocolat", 50,'g',226,4.3,31,8.8,0.42]
+    ]],
+    ['☀️ Déjeuner', [
+      ["Hauts de cuisse de poulet (sans peau)", 180,'g',218,31.9,0,10.3,1.44],
+      ["Riz (poids cru)", 100,'g',350,7,76.7,1,0.22],
+      ["Légumes verts (surgelés)", 250,'g',75,5,10,0.6,0.63],
+      ["Huile d'olive (cuisson + assaisonnement)", 10,'g',90,0,0,10,0.09]
+    ]],
+    ['🌙 Dîner', [
+      ["Œufs entiers (omelette)", 3,'u',270,22.5,1.5,19.5,0.99],
+      ["Thon en boîte (1 boîte égouttée)", 140,'g',154,35,0,1.4,1.30],
+      ["Patate douce", 300,'g',258,4.5,60,0.3,0.75],
+      ["Légumes verts (surgelés)", 200,'g',60,4,8,0.5,0.50],
+      ["Banane (dessert)", 1,'u',105,1.3,27,0.4,0.25],
+      ["Huile d'olive (cuisson)", 5,'g',45,0,0,5,0.05]
+    ]]
+  ],
+  pdm: [
+    ['🌅 Petit-déjeuner', [
+      ["Fromage blanc 0% (plafond 150 g/j)", 150,'g',67,12,6,0.3,0.30,1],
+      ["Whey (mélangée dans le fromage blanc)", 30,'g',115,24,2,1.5,0.75,1],
+      ["Bjorg croustillant chocolat", 110,'g',497,9.5,68.2,19.3,0.92]
+    ]],
+    ['☀️ Déjeuner', [
+      ["Hauts de cuisse de poulet (sans peau)", 170,'g',206,30.1,0,9.7,1.36],
+      ["Pâtes (poids cru)", 160,'g',576,19.2,115.2,2.9,0.26],
+      ["Beurre (dans les pâtes)", 15,'g',112,0,0,12.3,0.15],
+      ["Fromage râpé", 30,'g',120,7.5,0.8,9.8,0.27],
+      ["Légumes verts (surgelés)", 200,'g',60,4,8,0.5,0.50]
+    ]],
+    ['🌙 Dîner', [
+      ["Œufs entiers (omelette)", 2,'u',180,15,1,13,0.66],
+      ["Thon en boîte (1 boîte égouttée)", 140,'g',154,35,0,1.4,1.30],
+      ["Riz (poids cru)", 120,'g',420,8.4,92,1.2,0.26],
+      ["Légumes verts (surgelés)", 200,'g',60,4,8,0.5,0.50],
+      ["Chocolat noir", 20,'g',110,1.6,9.2,8.6,0.20],
+      ["Banane (dessert)", 1,'u',105,1.3,27,0.4,0.25]
+    ]]
+  ],
+  recomp: [
+    ['🌅 Petit-déjeuner', [
+      ["Fromage blanc 0% (plafond 150 g/j)", 150,'g',67,12,6,0.3,0.30,1],
+      ["Whey (mélangée dans le fromage blanc)", 30,'g',115,24,2,1.5,0.75,1],
+      ["Bjorg croustillant chocolat", 60,'g',271,5.2,37.2,10.5,0.50]
+    ]],
+    ['☀️ Déjeuner', [
+      ["Hauts de cuisse de poulet (sans peau)", 170,'g',206,30.1,0,9.7,1.36],
+      ["Riz (poids cru)", 110,'g',385,7.7,84.7,1.1,0.24],
+      ["Légumes verts (surgelés)", 250,'g',75,5,10,0.6,0.63],
+      ["Huile d'olive (cuisson + assaisonnement)", 10,'g',90,0,0,10,0.09]
+    ]],
+    ['🌙 Dîner', [
+      ["Œufs entiers (omelette)", 3,'u',270,22.5,1.5,19.5,0.99],
+      ["Thon en boîte (1 boîte égouttée)", 140,'g',154,35,0,1.4,1.30],
+      ["Pâtes (poids cru)", 110,'g',396,13.2,79.2,2,0.18],
+      ["Sauce tomate", 100,'g',30,1.5,5,0.3,0.20],
+      ["Banane (dessert)", 1,'u',105,1.3,27,0.4,0.25],
+      ["Huile d'olive (cuisson)", 5,'g',45,0,0,5,0.05]
+    ]]
+  ]
+};
+
+function fmtQty(q, u){
+  if (u === 'u'){
+    const r = Math.max(0.5, Math.round(q*2)/2);
+    return (r % 1 ? r.toFixed(1).replace('.',',') : r) + (r > 1 ? ' unités' : ' unité');
+  }
+  const step = u === 'ml' ? 10 : 5;
+  return Math.max(step, Math.round(q/step)*step) + ' ' + u;
+}
+
+function renderMenu(key){
+  const menu = MENUS[key];
+  const labels = {maintien:'⚖️ Maintien', seche:'🔥 Sèche', pdm:'💪 Prise de masse', recomp:'🔄 Recomposition'};
+  // total du menu de référence (les items "fixes" — fromage blanc plafonné, dose de whey — ne sont pas mis à l'échelle)
+  let tk = 0, fixedK = 0;
+  menu.forEach(([_, items]) => items.forEach(it => { tk += it[3]; if (it[9]) fixedK += it[3]; }));
+  const f = Math.max(0.5, (P[key].kcal - fixedK) / (tk - fixedK)); // facteur appliqué au reste
+  $('menuObjLabel').textContent = labels[key];
+  let dayPrice = 0;
+  $('menuGrid').innerHTML = menu.map(([nom, items]) => {
+    let mk=0, mp=0, mg=0, ml=0, mprix=0;
+    const rows = items.map(it => {
+      const [n, q, u, k, p, g, l, prix, fixe] = it;
+      const s = fixe ? 1 : f;
+      mk += k*s; mp += p*s; mg += g*s; ml += l*s; mprix += (prix||0)*s;
+      return `<div class="macro-row" style="margin:6px 0"><span>${n}</span><b>${fmtQty(q*s, u)}</b></div>`;
+    }).join('');
+    dayPrice += mprix;
+    return `<div class="stat" style="text-align:left">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;gap:6px;flex-wrap:wrap">
+        <b>${nom}</b><span style="display:flex;gap:6px"><span class="pill g">${fmt(mk)} kcal</span><span class="pill o">≈ ${mprix.toFixed(2).replace('.',',')} €</span></span></div>
+      ${rows}
+      <div class="note" style="margin-top:8px">🥩 ${fmt(mp)} g · 🍚 ${fmt(mg)} g · 🥑 ${fmt(ml)} g</div>
+    </div>`;
+  }).join('') + `<div class="stat" style="display:flex;flex-direction:column;justify-content:center">
+      <div class="lbl">💶 Budget journée complète</div>
+      <div class="val o">${dayPrice.toFixed(2).replace('.',',')} €</div>
+      <div class="sub">soit ≈ ${(dayPrice*7).toFixed(0)} €/semaine · prix indicatifs supermarché France, hors promos — la whey en gros format et les surgelés font baisser la note</div>
+    </div>`;
+}
+
+// ================= OUTILS =================
+const FOODS = [
+  ['🍫 Barre chocolatée', 250], ['🍔 Burger fast-food', 550], ['🍕 Part de pizza', 300],
+  ['🥐 Croissant', 230], ['🍺 Pinte de bière', 220], ['🥤 Canette de soda', 140], ['🍟 Frites (moyenne)', 400]
+];
+function renderOutils(){
+  if (!P){ return; }
+  $('convPoids').textContent = P.poids + ' kg';
+  $('foodTable').querySelector('tbody').innerHTML = FOODS.map(([n,k]) => {
+    const pas = Math.round(k / kcalPerStep(P.poids));
+    const min = Math.round(pas/100);
+    return `<tr><td>${n}</td><td>${k} kcal</td><td><b>${fmt(pas)}</b> pas</td><td>≈ ${min} min</td></tr>`;
+  }).join('');
+  convPasToKcal(); convKcalToPas();
+}
+function convPasToKcal(){
+  const v = +$('convPas').value;
+  $('convPasRes').textContent = (P && v) ? fmt(v * kcalPerStep(P.poids)) : '—';
+}
+function convKcalToPas(){
+  const v = +$('convKcal').value;
+  $('convKcalRes').textContent = (P && v) ? fmt(v / kcalPerStep(P.poids)) : '—';
+}
+function estimerDuree(){
+  const cible = +$('cibleKg').value;
+  if (!P){ $('dureeRes').innerHTML = '⚠️ Calcule d\'abord ton profil.'; return; }
+  if (!cible){ $('dureeRes').innerHTML = '⚠️ Renseigne un poids cible.'; return; }
+  const diff = cible - P.poids;
+  if (Math.abs(diff) < 0.5){ $('dureeRes').innerHTML = '🎉 Tu es déjà à ton poids cible ! Passe en <b>maintien</b>.'; return; }
+  let rate, mode;
+  if (diff < 0){ rate = (P.tdee - P.seche.kcal)*7/7700; mode = '🔥 en sèche'; }
+  else { rate = (P.pdm.kcal - P.tdee)*7/7700; mode = '💪 en prise de masse'; }
+  const sem = Math.abs(diff)/rate;
+  const mois = sem/4.345;
+  const dateFin = new Date(Date.now() + sem*7*864e5);
+  $('dureeRes').innerHTML = `Pour ${diff<0?'perdre':'prendre'} <b>${Math.abs(diff).toFixed(1)} kg</b> ${mode} au rythme actuel (~${rate.toFixed(2)} kg/sem) :<br>
+    ⏱️ Environ <b>${Math.round(sem)} semaines</b> (${mois.toFixed(1)} mois) → objectif atteint vers le <b>${dateFin.toLocaleDateString('fr-FR',{day:'numeric',month:'long',year:'numeric'})}</b>.<br>
+    <span style="color:var(--muted)">Prévois des pauses diète de 1–2 semaines à maintien toutes les 8–12 semaines de sèche.</span>`;
+}
+
+// ================= SUIVI POIDS =================
+function getWeights(){ try{ return JSON.parse(localStorage.getItem('cf_weights')||'[]'); }catch(e){ return []; } }
+function setWeights(w){ localStorage.setItem('cf_weights', JSON.stringify(w)); }
+
+function addWeight(){
+  const d = $('wDate').value, p = +$('wPoids').value;
+  if (!d || !p){ alert('Renseigne la date et le poids 😉'); return; }
+  let w = getWeights().filter(x => x.d !== d);
+  w.push({d, p}); w.sort((a,b) => a.d.localeCompare(b.d));
+  setWeights(w); $('wPoids').value = '';
+  renderWeights();
+}
+function delWeight(d){ setWeights(getWeights().filter(x => x.d !== d)); renderWeights(); }
+function clearWeights(){ if (confirm('Effacer tout l\'historique de poids ?')){ setWeights([]); renderWeights(); } }
+
+function renderWeights(){
+  const w = getWeights();
+  const list = $('wList');
+  if (!w.length){
+    list.innerHTML = '<div class="empty">Aucune pesée enregistrée.</div>';
+    $('wLast').textContent = $('wDelta').textContent = $('wTrend').textContent = '—';
+    renderChart(); return;
+  }
+  list.innerHTML = w.slice().reverse().map(x =>
+    `<div class="wl-row"><span>${new Date(x.d+'T12:00').toLocaleDateString('fr-FR',{day:'numeric',month:'short',year:'numeric'})}</span><b>${x.p.toFixed(1)} kg</b><button onclick="delWeight('${x.d}')" title="Supprimer">✕</button></div>`
+  ).join('');
+  const last = w[w.length-1], first = w[0];
+  $('wLast').textContent = last.p.toFixed(1);
+  const delta = last.p - first.p;
+  $('wDelta').textContent = (delta>0?'+':'') + delta.toFixed(1) + ' kg';
+  $('wDelta').className = 'val ' + (Math.abs(delta)<0.3 ? 'b' : delta<0 ? 'g' : 'o');
+
+  // tendance : régression sur 28 derniers jours
+  const cutoff = new Date(new Date(last.d) - 28*864e5).toISOString().slice(0,10);
+  const recent = w.filter(x => x.d >= cutoff);
+  if (recent.length >= 2){
+    const xs = recent.map(x => new Date(x.d).getTime()/864e5), ys = recent.map(x => x.p);
+    const n = xs.length, mx = xs.reduce((a,b)=>a+b)/n, my = ys.reduce((a,b)=>a+b)/n;
+    let num=0, den=0;
+    for (let i=0;i<n;i++){ num += (xs[i]-mx)*(ys[i]-my); den += (xs[i]-mx)**2; }
+    const slope = den ? num/den*7 : 0;
+    $('wTrend').textContent = (slope>0?'+':'') + slope.toFixed(2) + ' kg';
+  } else $('wTrend').textContent = '—';
+  renderCoachPoids();
+  renderChart();
+}
+
+function slopePerWeek(pts){
+  const xs = pts.map(x => new Date(x.d).getTime()/864e5), ys = pts.map(x => x.p);
+  const n = xs.length, mx = xs.reduce((a,b)=>a+b)/n, my = ys.reduce((a,b)=>a+b)/n;
+  let num = 0, den = 0;
+  for (let i=0;i<n;i++){ num += (xs[i]-mx)*(ys[i]-my); den += (xs[i]-mx)**2; }
+  return den ? num/den*7 : 0;
+}
+
+function renderCoachPoids(){
+  const el = $('coachPoids'); if (!el) return;
+  const w = getWeights();
+  if (w.length < 3){
+    el.innerHTML = '📉 Ajoute au moins <b>3 pesées</b> pour débloquer l\'analyse (idéal : lundi · mercredi · vendredi matin, à jeun).';
+    return;
+  }
+  const last = w[w.length-1];
+  const cutoff = new Date(new Date(last.d) - 14*864e5).toISOString().slice(0,10);
+  let rec = w.filter(x => x.d >= cutoff);
+  if (rec.length < 3) rec = w.slice(-3);
+  const slope = slopePerWeek(rec);
+  const spanDays = (new Date(last.d) - new Date(w[0].d)) / 864e5;
+  const tTxt = '<b>' + (slope>0?'+':'') + slope.toFixed(2).replace('.',',') + ' kg/semaine</b>';
+
+  if (!P){
+    el.innerHTML = '📊 Tendance actuelle : ' + tTxt + '.<br>👤 Calcule ton profil (onglet Profil & Résultats) pour recevoir un conseil personnalisé selon ton objectif.';
+    return;
+  }
+  const labels = {maintien:'⚖️ maintien', seche:'🔥 sèche', pdm:'💪 prise de masse', recomp:'🔄 recomposition'};
+  const head = '📊 Tendance sur tes dernières pesées : ' + tTxt + ' · objectif : <b>' + labels[P.objectif] + '</b>.<br>';
+
+  if (spanDays < 10){
+    el.innerHTML = head + '⏳ <b>Moins de 2 semaines de données</b> — cette tendance est encore provisoire (l\'eau fausse les premiers jours, surtout en début de sèche ou de PDM). Continue tes 3 pesées/semaine et <b>ne touche pas encore à l\'ajustement calories</b>. Conseil fiable à partir de 2 semaines.';
+    return;
+  }
+
+  let verdict = '';
+  const AJ = ' via le champ 🎚️ <b>Ajustement calories</b> (onglet Profil), puis reclique sur Calculer.';
+  if (P.objectif === 'seche'){
+    const target = -(P.tdee - P.seche.kcal)*7/7700;
+    const tgTxt = target.toFixed(2).replace('.',',');
+    if (slope > target + 0.25) verdict = '🐌 <b>Tu perds plus lentement que prévu</b> (cible ≈ ' + tgTxt + ' kg/sem). Ton TDEE réel est sans doute plus bas qu\'estimé : mets <b>−100 à −150</b>' + AJ + ' Vérifie aussi les calories "invisibles" (huile, sauces, grignotage).';
+    else if (slope < target - 0.25) verdict = '⚡ <b>Tu perds trop vite</b> — risque de perte musculaire et de gros coup de fatigue. Mets <b>+100</b>' + AJ;
+    else verdict = '✅ <b>Parfait, tu es dans la cible</b> (' + tgTxt + ' kg/sem attendu). Ne change rien, continue exactement pareil.';
+  } else if (P.objectif === 'pdm'){
+    const target = (P.pdm.kcal - P.tdee)*7/7700;
+    const tgTxt = '+' + target.toFixed(2).replace('.',',');
+    if (slope < target - 0.2) verdict = '🐌 <b>Tu prends moins que prévu</b> (cible ≈ ' + tgTxt + ' kg/sem). Mets <b>+100 à +150</b>' + AJ;
+    else if (slope > target + 0.25) verdict = '⚡ <b>Tu prends trop vite</b> — au-delà du rythme cible, le surplus part en gras. Mets <b>−100</b>' + AJ;
+    else verdict = '✅ <b>Rythme de prise idéal</b> (' + tgTxt + ' kg/sem attendu). Ne change rien.';
+  } else if (P.objectif === 'recomp'){
+    if (slope > 0.15) verdict = '📈 <b>Tu prends du poids</b> — en recomp on vise un poids stable ou en très légère baisse. Mets <b>−100</b>' + AJ;
+    else if (slope < -0.4) verdict = '📉 <b>Tu perds trop vite pour une recomp</b> — tu risques d\'y laisser du muscle. Mets <b>+100</b>' + AJ;
+    else verdict = '✅ <b>Poids stable : c\'est exactement ce qu\'on veut en recomp.</b> Ton vrai indicateur, c\'est l\'onglet Entraînement : si tes reps montent, tu construis du muscle en perdant du gras. Bonus : mesure ton tour de taille 1×/mois.';
+  } else {
+    if (slope > 0.2) verdict = '📈 <b>Tu prends du poids</b> alors que tu vises le maintien. Mets <b>−100</b>' + AJ;
+    else if (slope < -0.2) verdict = '📉 <b>Tu perds du poids</b> alors que tu vises le maintien. Mets <b>+100</b>' + AJ;
+    else verdict = '✅ <b>Poids stable, maintien réussi.</b> Ne change rien.';
+  }
+  el.innerHTML = head + verdict + '<br><span style="color:var(--muted)">Règle d\'or : un seul ajustement à la fois, puis 2 semaines d\'observation avant d\'en refaire un.</span>';
+}
+
+function renderChart(){
+  const cv = $('chart'), ctx = cv.getContext('2d');
+  const W = cv.width = cv.clientWidth * 2, H = cv.height = 520; // retina
+  ctx.clearRect(0,0,W,H);
+  const w = getWeights();
+  ctx.font = '24px Segoe UI'; ctx.textAlign = 'center';
+  if (w.length < 2){
+    ctx.fillStyle = '#8b98ab';
+    ctx.fillText(w.length ? 'Ajoute au moins 2 pesées pour voir ta courbe' : 'Aucune donnée — ajoute ta première pesée !', W/2, H/2);
+    return;
+  }
+  const pad = {l:90, r:30, t:30, b:60};
+  const ps = w.map(x => x.p);
+  let min = Math.min(...ps), max = Math.max(...ps);
+  const m = Math.max((max-min)*0.15, 0.5); min -= m; max += m;
+  const t0 = new Date(w[0].d).getTime(), t1 = new Date(w[w.length-1].d).getTime() || t0+1;
+  const X = t => pad.l + (t - t0)/(t1 - t0 || 1) * (W - pad.l - pad.r);
+  const Y = p => pad.t + (max - p)/(max - min) * (H - pad.t - pad.b);
+
+  // grille + labels Y
+  ctx.strokeStyle = '#2b3648'; ctx.fillStyle = '#8b98ab'; ctx.textAlign = 'right';
+  for (let i=0;i<=4;i++){
+    const p = min + (max-min)*i/4, y = Y(p);
+    ctx.beginPath(); ctx.moveTo(pad.l, y); ctx.lineTo(W-pad.r, y); ctx.stroke();
+    ctx.fillText(p.toFixed(1), pad.l-12, y+8);
+  }
+  // labels X (première / milieu / dernière)
+  ctx.textAlign = 'center';
+  [w[0], w[Math.floor(w.length/2)], w[w.length-1]].forEach(pt => {
+    ctx.fillText(new Date(pt.d+'T12:00').toLocaleDateString('fr-FR',{day:'numeric',month:'short'}), X(new Date(pt.d).getTime()), H-20);
+  });
+  // ligne
+  ctx.strokeStyle = '#22c55e'; ctx.lineWidth = 4; ctx.beginPath();
+  w.forEach((pt,i) => { const x = X(new Date(pt.d).getTime()), y = Y(pt.p); i ? ctx.lineTo(x,y) : ctx.moveTo(x,y); });
+  ctx.stroke();
+  // points
+  ctx.fillStyle = '#22c55e';
+  w.forEach(pt => { ctx.beginPath(); ctx.arc(X(new Date(pt.d).getTime()), Y(pt.p), 7, 0, 7); ctx.fill(); });
+}
+
+// ================= ENTRAINEMENT =================
+// Basé sur le programme "Forge Your Body" adapté : Mar/Jeu = volley, course déplacée au samedi.
+const EXOS = {
+  // FORCE (lundi)
+  fTr:     {n:"Tractions (strictes si ≥3, sinon négatives 5s)", mode:'max', sets:5, rec:'150s',
+    goal:"Chaque série = ton MAX de tractions strictes (menton au-dessus de la barre, sans élan, départ bras tendus). RÈGLE : si tu ne peux pas en faire au moins 3 strictes, fais la série en négatives → saute pour monter, descends en freinant 5 secondes.",
+    how:"Prise pronation (paumes vers l'avant), un peu plus large que les épaules. Avant de tirer : épaules basses (éloigne-les des oreilles). Tire la poitrine vers la barre, redescends bras complètement tendus."},
+  fDips:   {n:"Dips (strictes ou assistées élastique)", mode:'max', sets:4, rec:'120s',
+    goal:"Chaque série = ton MAX de dips propres. Si tu ne peux pas en faire au moins 3, mets un élastique sous les genoux pour t'assister. Le max = tu ne peux plus faire UNE rep propre, pas une rep tremblante à moitié.",
+    how:"Descends jusqu'à ce que les coudes soient à ~90°, buste légèrement penché en avant, coudes qui restent près du corps. Remonte en poussant fort sans verrouiller violemment les coudes."},
+  fPompes: {n:"Pompes (surélevées/lestées si facile)", mode:'max', sets:4, rec:'90s', hint:'max −1',
+    goal:"MAX −1 : fais des pompes jusqu'à sentir que la PROCHAINE rep serait ta dernière possible → arrête-toi là. Tu gardes exactement 1 rep en réserve, tu ne vas jamais à l'échec. Si tu dépasses 20 reps facilement : pieds surélevés sur une chaise, ou sac à dos lesté.",
+    how:"Mains sous les épaules, corps gainé aligné tête-talons, poitrine qui frôle le sol à chaque rep, remontée complète bras tendus."},
+  fTrNeg:  {n:"Tractions négatives (descente 5-6s)", mode:'reps', rec:'90s',
+    goal:"Tu ne fais QUE la descente. Monte-toi en haut de la barre (saute ou avec une chaise), menton au-dessus, puis descends en freinant pendant 5-6 secondes complètes. 1 descente lente = 1 rep. Si tu descends en moins de 3s, la rep ne compte pas.",
+    how:"Freine surtout sur la 2ᵉ moitié de la descente (c'est là qu'on lâche). Finis bras complètement tendus avant de remonter pour la suivante."},
+  fDipsNeg:{n:"Dips négatives (descente 4-5s)", mode:'reps', rec:'90s',
+    goal:"Même principe : uniquement la descente, en 4-5 secondes de frein. Monte en position haute bras tendus (aide-toi des jambes), descends lentement jusqu'à coudes à 90°. 1 descente = 1 rep.",
+    how:"Coudes près du corps, buste légèrement penché. Contrôle du début à la fin — pas de chute libre sur les 10 derniers centimètres."},
+  fHollow: {n:"Hollow body hold", mode:'hold', rec:'45s',
+    goal:"Tiens la position le temps cible, en secondes. Si tu casses la position avant la fin, note le temps réellement tenu.",
+    how:"Allongé sur le dos : bas du dos PLAQUÉ au sol (non négociable), épaules décollées, bras tendus derrière la tête, jambes tendues à ~30 cm du sol. Trop dur ? Plie les genoux ou monte les jambes plus haut."},
+  // VOLUME (mercredi)
+  vPompes: {n:"Pompes standards", mode:'reps', rec:'90s',
+    goal:"Atteins la cible en gardant 2-3 reps en réserve (RIR 2-3). Si tu finis la série en tremblant à l'échec, c'est que la cible est devenue ton max → dis-le en note, on est pas là pour ça le mercredi.",
+    how:"Corps gainé aligné, mains sous les épaules, poitrine frôle le sol, remontée complète. Rythme régulier, pas de reps rebondies."},
+  vTrAss:  {n:"Tractions assistées élastique", mode:'reps', rec:'120s',
+    goal:"Élastique accroché à la barre, un pied ou un genou dedans. Choisis l'épaisseur d'élastique qui te permet JUSTE d'atteindre la cible — si tu dépasses la cible de 3+ reps, prends un élastique plus fin.",
+    how:"Même technique que les tractions strictes : épaules basses, menton au-dessus de la barre, descente complète bras tendus."},
+  vDipsAss:{n:"Dips assistés élastique", mode:'reps', rec:'120s',
+    goal:"Élastique tendu entre les deux barres (ou sous les genoux). Même règle : l'élastique doit te permettre JUSTE d'atteindre la cible, pas plus.",
+    how:"Coudes à 90° en bas, coudes près du corps, remontée complète."},
+  vRows:   {n:"Australian rows (rowing inversé)", mode:'reps', rec:'75s',
+    goal:"Atteins la cible avec 2-3 reps en réserve. Plus c'est horizontal, plus c'est dur : ajuste l'inclinaison de ton corps pour être dans la bonne difficulté.",
+    how:"Sous une barre basse ou une table SOLIDE : corps tendu comme une planche, talons au sol, tire la poitrine jusqu'à toucher la barre/le rebord, redescends bras tendus. Serre les omoplates en haut."},
+  vTempo:  {n:"Pompes tempo (descente 3s)", mode:'reps', rec:'75s',
+    goal:"Pompes avec descente comptée : \"mille-un, mille-deux, mille-trois\" pour descendre, remontée normale. Si tu descends plus vite, la rep ne compte pas.",
+    how:"Le tempo lent va vite te cramer les pecs et les triceps — c'est le but. Garde le corps aligné jusqu'au bout, c'est là que le gainage lâche en premier."},
+  vFace:   {n:"Face pull élastique", mode:'reps', rec:'60s',
+    goal:"Exercice de santé d'épaule — CRUCIAL pour toi avec le volley (smashes et services abîment l'épaule). Ne le saute jamais, même pressé. Léger et propre plutôt que lourd et moche.",
+    how:"Élastique fixé à hauteur du visage. Tire vers ton front en ÉCARTANT les mains, coudes hauts, serre les omoplates 1 seconde en fin de mouvement, retour contrôlé."},
+  vPlank:  {n:"Planche", mode:'hold', rec:'45s',
+    goal:"Tiens le temps cible en secondes, position parfaite. Le chrono s'arrête dès que les hanches tombent ou remontent.",
+    how:"Sur les avant-bras, coudes sous les épaules, corps aligné tête-talons, fessiers et abdos SERRÉS en permanence. Regarde le sol, pas devant."},
+  // POIDS DU CORPS (vendredi)
+  pPompes: {n:"Pompes (+ bottom hold 2×15s)", mode:'max', sets:4, rec:'75s', hint:'sous-max',
+    goal:"SOUS-MAX : arrête chaque série à 2-3 reps de ton max. Exemple : max à 15 → fais des séries de 12. C'est une séance de volume de fin de semaine, pas un test. EN PLUS : 2 pauses de 15 secondes tenues en bas de pompe (poitrine à 5 cm du sol), n'importe quand dans la séance.",
+    how:"Technique habituelle, rythme fluide. Le bottom hold : position basse figée, corps gainé, ça brûle — c'est normal."},
+  pRow:    {n:"Rowing sous table (+ hold)", mode:'max', sets:4, rec:'90s', hint:'sous-max',
+    goal:"SOUS-MAX : garde 2-3 reps en réserve à chaque série. + 1 hold : reste 10-15 secondes en position haute (poitrine contre le rebord) sur ta dernière rep de la dernière série.",
+    how:"Sous une table solide (vérifie !) : attrape le rebord, corps tendu, tire la poitrine vers le rebord, redescends bras tendus."},
+  pDips:   {n:"Dips entre 2 chaises (+ support hold)", mode:'max', sets:4, rec:'90s', hint:'max −2',
+    goal:"MAX −2, la règle la plus importante du vendredi : fais des reps jusqu'à ce qu'il t'en reste EXACTEMENT 2 propres dans le réservoir, puis stop. Exemple : ton max est 10 → arrête-toi à 8. JAMAIS à l'échec entre 2 chaises (l'équilibre est précaire, c'est l'épaule qui paie). + support hold : 2 × 20 secondes tenues en position haute bras tendus.",
+    how:"2 chaises stables dos à dos, une main sur chaque dossier ou assise. Descends coudes à 90° MAX, buste droit, remonte fort."},
+  pSquats: {n:"Squats poids du corps", mode:'reps', rec:'60s',
+    goal:"Atteins la cible, rythme contrôlé. Trop facile ? Descends plus lentement (3s) plutôt que d'accélérer.",
+    how:"Pieds largeur épaules, descends les cuisses SOUS la parallèle, talons qui restent au sol, dos neutre, genoux qui suivent la direction des orteils."},
+  pPont:   {n:"Pont fessier unilatéral (par jambe)", mode:'reps', rec:'60s',
+    goal:"La cible est PAR JAMBE : \"3 × 12/j\" = 12 reps jambe gauche + 12 reps jambe droite = 1 série. Fessiers forts = détente au volley + protection genoux/dos.",
+    how:"Sur le dos, un pied au sol proche des fesses, l'autre jambe tendue en l'air. Pousse la hanche vers le plafond avec le talon, serre la fesse 1s en haut, redescends sans poser."},
+  pFentes: {n:"Fentes marchées (par jambe)", mode:'reps', rec:'60s',
+    goal:"Cible PAR JAMBE. Fentes en avançant (marchées) si tu as la place, sinon sur place en alternant.",
+    how:"Grand pas en avant, genou arrière qui frôle le sol, buste droit, pousse sur le talon avant pour te relever. Le genou avant ne rentre pas vers l'intérieur."},
+  pMollets:{n:"Mollets debout (protège tibias volley/course)", mode:'reps', rec:'45s',
+    goal:"TON exercice anti-périostite (tes douleurs tibia en course viennent souvent de mollets faibles). Monte normalement, descends LENTEMENT en 3 secondes — c'est la descente lente qui protège.",
+    how:"Debout, avant des pieds sur une marche, talons dans le vide. Monte sur pointes au maximum, descends les talons SOUS le niveau de la marche, lentement. Tiens-toi à un mur pour l'équilibre."},
+  pSuperman:{n:"Superman", mode:'reps', rec:'45s',
+    goal:"Renforce les lombaires — l'assurance-vie de ton dos pour le volley et la vie de bureau.",
+    how:"À plat ventre, bras tendus devant. Décolle SIMULTANÉMENT bras, poitrine et jambes, tiens 2 secondes en haut, redescends contrôlé. Regarde le sol pour garder la nuque neutre."},
+  pBird:   {n:"Bird dog (par côté)", mode:'reps', rec:'45s',
+    goal:"Cible PAR CÔTÉ : \"3 × 12/c\" = 12 reps bras droit/jambe gauche + 12 reps bras gauche/jambe droite = 1 série.",
+    how:"À 4 pattes : tends le bras droit devant et la jambe gauche derrière, parfaitement alignés avec le dos, pause 2 secondes, reviens, change de côté. Le bassin ne doit PAS tourner."}
+};
+// progression : valeur de départ → plafond reps → puis +1 série → plafond séries
+const PROG_INIT = {
+  fTrNeg:{v:3,sets:3}, fDipsNeg:{v:4,sets:3}, fHollow:{v:25,sets:3},
+  vPompes:{v:12,sets:4}, vTrAss:{v:6,sets:4}, vDipsAss:{v:8,sets:4}, vRows:{v:12,sets:3},
+  vTempo:{v:8,sets:3}, vFace:{v:15,sets:3}, vPlank:{v:40,sets:3},
+  pSquats:{v:15,sets:4}, pPont:{v:12,sets:3}, pFentes:{v:10,sets:3}, pMollets:{v:20,sets:3},
+  pSuperman:{v:15,sets:3}, pBird:{v:12,sets:3},
+  runEF:{min:45}, runVMA:{reps:6}
+};
+const CAPS = {
+  fTrNeg:{v:5,sets:4}, fDipsNeg:{v:6,sets:4}, fHollow:{v:60,sets:4},
+  vPompes:{v:20,sets:5}, vTrAss:{v:10,sets:5}, vDipsAss:{v:12,sets:5}, vRows:{v:15,sets:5},
+  vTempo:{v:12,sets:4}, vFace:{v:20,sets:4}, vPlank:{v:90,sets:4},
+  pSquats:{v:25,sets:5}, pPont:{v:15,sets:4}, pFentes:{v:12,sets:4}, pMollets:{v:30,sets:4},
+  pSuperman:{v:20,sets:4}, pBird:{v:15,sets:4}
+};
+const TDAYS = [
+  ['lun','🏋️ Lundi — Calisthénics FORCE','Lourd · peu de reps · RIR 1-2','5 min : jumping jacks · rotations bras · mobilité épaules · dead hang 15s · 5 pompes inclinées',['fTr','fDips','fPompes','fTrNeg','fDipsNeg','fHollow']],
+  ['mar','🏐 Mardi — Volley en club','Séance club — le coach gère',null,'volley'],
+  ['mer','💪 Mercredi — Calisthénics VOLUME','Reps modérées · RIR 2-3','5 min : jumping jacks · dead hang · bird dogs · mobilité épaules',['vPompes','vTrAss','vDipsAss','vRows','vTempo','vFace','vPlank']],
+  ['jeu','🏐 Jeudi — Volley en club','Séance club — le coach gère',null,'volley'],
+  ['ven','🤸 Vendredi — Poids du corps complet','Trio + jambes/fessiers/lombaires · sans matériel','5 min : jumping jacks · squats · fentes dynamiques · mobilité hanches/chevilles',['pPompes','pRow','pDips','pSquats','pPont','pFentes','pMollets','pSuperman','pBird']],
+  ['sam','🏃 Samedi — Course','Alternance : endurance fondamentale / VMA','5-15 min footing très lent + mobilité + accélérations','run'],
+  ['dim','😴 Dimanche — Repos actif','Marche 8-10 000 pas · étirements 10 min · sommeil !',null,'rest']
+];
+
+function trainDefault(){ return {week:1, prog:JSON.parse(JSON.stringify(PROG_INIT)), fails:{}, current:{}, history:[]}; }
+function getTrain(){ try{ const t = JSON.parse(localStorage.getItem('cf_train')); return t && t.prog ? t : trainDefault(); }catch(e){ return trainDefault(); } }
+function setTrain(t){ localStorage.setItem('cf_train', JSON.stringify(t)); }
+function goalInfo(){
+  try{
+    const s = JSON.parse(localStorage.getItem('cf_profil')) || {};
+    return {obj: s.objectifPrincipal || null, secheMode: +(s.secheMode || 20)};
+  }catch(e){ return {obj:null, secheMode:20}; }
+}
+function deloadEvery(){
+  const g = goalInfo();
+  return (g.obj === 'seche' && g.secheMode >= 25) ? 4 : 5;
+}
+function isDeload(w){ return w % deloadEvery() === 0; }
+function deloadV(v){ return Math.max(1, Math.ceil(v*0.6)); }
+function deloadS(s){ return Math.max(2, s-1); }
+
+function exoTarget(id, T){
+  const e = EXOS[id], dl = isDeload(T.week);
+  if (e.mode === 'max'){
+    const sets = dl ? deloadS(e.sets) : e.sets;
+    return {sets, label: sets + ' × ' + (e.hint || 'max') + (dl ? ' LÉGER' : '')};
+  }
+  const p = T.prog[id];
+  const v = dl ? deloadV(p.v) : p.v, sets = dl ? deloadS(p.sets) : p.sets;
+  return {sets, v, label: sets + ' × ' + v + (e.mode==='hold' ? 's' : '')};
+}
+function runType(w){ return w % 2 === 1 ? 'EF' : 'VMA'; }
+function getVMA(){ try{ return JSON.parse(localStorage.getItem('cf_vma')); }catch(e){ return null; } }
+function fmtPace(minPerKm){
+  const m = Math.floor(minPerKm), s = Math.round((minPerKm - m) * 60);
+  return m + ':' + String(s).padStart(2,'0');
+}
+function paceEF(){
+  const v = getVMA();
+  return v ? fmtPace(60/(v.v*0.68)) + '-' + fmtPace(60/(v.v*0.62)) + '/km' : '6:10-6:25/km';
+}
+function speedVMA(){
+  const v = getVMA();
+  return v ? (Math.round(v.v*0.92*10)/10) + '-' + v.v + ' km/h' : '14-15 km/h';
+}
+function runTarget(T){
+  const dl = isDeload(T.week);
+  if (dl) return {label:'Récup active : 30 min TRÈS lent (6:30-7:00/km) — semaine de décharge. 💡 C\'est LE bon samedi pour (re)faire ton test VMA si le dernier date de +10 semaines (voir bloc Test VMA plus bas).', type:'DELOAD'};
+  if (runType(T.week) === 'EF'){
+    const m = T.prog.runEF.min;
+    return {label:'Endurance fondamentale : ' + m + ' min @ ' + paceEF() + ' · RPE 4-6 (tu peux parler)', type:'EF'};
+  }
+  const r = T.prog.runVMA.reps;
+  return {label:'VMA : ' + r + ' × (1 min rapide ' + speedVMA() + ' / 1 min récup lente) + 10 min retour au calme', type:'VMA'};
+}
+function weekLoad(T){
+  let L = 0;
+  TDAYS.forEach(([k]) => {
+    const d = T.current['_'+k] || {};
+    if (d.done) L += (+d.dur || 0) * (+d.rpe || 0);
+  });
+  return Math.round(L);
+}
+function beep(){
+  try{
+    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+    const o = ctx.createOscillator(), g = ctx.createGain();
+    o.connect(g); g.connect(ctx.destination);
+    o.frequency.value = 880; g.gain.value = .25;
+    o.start(); o.stop(ctx.currentTime + .5);
+  }catch(e){}
+}
+
+const TR = {
+  info(id){
+    const el = document.getElementById('info-' + id);
+    if (el) el.classList.toggle('open');
+  },
+  timer(sec){
+    clearInterval(this._t);
+    const el = $('recupTimer');
+    el.classList.remove('hidden', 'fini');
+    let left = sec;
+    $('rtVal').textContent = left + 's';
+    this._t = setInterval(() => {
+      left--;
+      if (left <= 0){
+        clearInterval(this._t);
+        $('rtVal').textContent = 'GO ! 💪';
+        el.classList.add('fini');
+        beep();
+        try{ if (navigator.vibrate) navigator.vibrate([200,100,200]); }catch(e){}
+        setTimeout(() => el.classList.add('hidden'), 4000);
+      } else {
+        $('rtVal').textContent = left + 's';
+      }
+    }, 1000);
+  },
+  stopTimer(){
+    clearInterval(this._t);
+    $('recupTimer').classList.add('hidden');
+  },
+  vma(){
+    const dist = +$('vmaDist').value;
+    if (!dist || dist < 600 || dist > 3000){ alert('Distance invalide — entre 600 et 3000 m (ex : 1550).'); return; }
+    const v = Math.round(dist/100 * 10) / 10;
+    localStorage.setItem('cf_vma', JSON.stringify({v, d: new Date().toISOString().slice(0,10)}));
+    $('vmaDist').value = '';
+    renderTraining();
+    alert('✅ VMA enregistrée : ' + v + ' km/h.\nTes allures de fractionné et d\'endurance sont recalibrées automatiquement.');
+  },
+  set(id, i, val){
+    const T = getTrain();
+    (T.current[id] = T.current[id] || [])[i] = val === '' ? '' : +val;
+    setTrain(T);
+  },
+  day(day, field, val){
+    const T = getTrain();
+    (T.current['_'+day] = T.current['_'+day] || {})[field] = val;
+    setTrain(T);
+  },
+  done(day){
+    const T = getTrain();
+    const d = T.current['_'+day] = T.current['_'+day] || {};
+    d.done = !d.done;
+    d.open = false; // séance faite → bloc replié automatiquement
+    setTrain(T); renderTraining();
+  },
+  open(day){
+    const T = getTrain();
+    const d = T.current['_'+day] = T.current['_'+day] || {};
+    d.open = !d.open;
+    setTrain(T); renderTraining();
+  },
+  close(){
+    const T = getTrain();
+    const doneCount = TDAYS.filter(([k]) => (T.current['_'+k]||{}).done).length;
+    if (doneCount < 3 && !confirm('Seulement ' + doneCount + ' séance(s) cochée(s) "faite". Clôturer quand même ?')) return;
+    const dl = isDeload(T.week);
+    let progressed = [], held = [];
+    if (!dl){
+      // Exos à progression (double progression : reps puis séries)
+      Object.keys(PROG_INIT).forEach(id => {
+        if (id === 'runEF' || id === 'runVMA') return;
+        const e = EXOS[id], p = T.prog[id], cap = CAPS[id];
+        const dayKey = TDAYS.find(d => Array.isArray(d[4]) && d[4].includes(id))[0];
+        const dayDone = (T.current['_'+dayKey]||{}).done;
+        const vals = T.current[id] || [];
+        const filled = vals.filter(x => x !== '' && x != null);
+        if (!dayDone || filled.length < p.sets){ return; } // pas de données → cible inchangée
+        const success = filled.length >= p.sets && filled.slice(0,p.sets).every(x => x >= p.v);
+        if (success){
+          T.fails[id] = 0;
+          if (p.v < cap.v){ p.v += (e.mode==='hold' ? 5 : 1); progressed.push(e.n); }
+          else if (p.sets < cap.sets){ p.sets += 1; progressed.push(e.n + ' (+1 série)'); }
+          else { held.push(e.n + ' → plafond atteint : passe à une variante plus dure !'); }
+        } else {
+          T.fails[id] = (T.fails[id]||0) + 1;
+          if (T.fails[id] >= 2){
+            p.v = Math.max(PROG_INIT[id].v - 2, p.v - 2, 1);
+            T.fails[id] = 0;
+            held.push(e.n + ' → cible réduite pour relancer');
+          }
+        }
+      });
+      // Course
+      const samDone = (T.current._sam||{}).done;
+      const rpe = +((T.current._sam||{}).rpe || 0);
+      if (samDone && (rpe === 0 || rpe <= 7)){
+        if (runType(T.week) === 'EF' && T.prog.runEF.min < 75){ T.prog.runEF.min += 5; progressed.push('Course EF (+5 min)'); }
+        if (runType(T.week) === 'VMA' && T.prog.runVMA.reps < 10){ T.prog.runVMA.reps += 1; progressed.push('Course VMA (+1 intervalle)'); }
+      }
+    }
+    // Historique
+    let totalReps = 0;
+    Object.keys(EXOS).forEach(id => (T.current[id]||[]).forEach(v => totalReps += (+v||0)));
+    T.history.push({
+      week: T.week, deload: dl, done: doneCount,
+      totalReps, load: weekLoad(T),
+      km: (T.current._sam||{}).dist || '—',
+      note: progressed.length ? ('Progression : ' + progressed.slice(0,4).join(', ') + (progressed.length>4 ? '…' : '')) : (dl ? 'Semaine de décharge ✔' : 'Cibles maintenues')
+    });
+    T.week += 1;
+    T.current = {};
+    setTrain(T);
+    renderTraining();
+    let msg = '✅ Semaine clôturée !\n\n';
+    if (isDeload(T.week)) msg += '🔵 SEMAINE ' + T.week + ' = DÉCHARGE : volume réduit ~40%, c\'est voulu. Récupère, dors, mange — tu progresseras mieux après.';
+    else if (progressed.length) msg += '📈 Cibles augmentées : ' + progressed.join(', ');
+    else msg += 'Cibles maintenues — remplis bien toutes tes séries pour déclencher la progression.';
+    if (held.length) msg += '\n\n⚠️ ' + held.join('\n');
+    alert(msg);
+  },
+  reset(){
+    if (!confirm('Réinitialiser tout le programme (semaine 1, historique effacé) ?')) return;
+    localStorage.removeItem('cf_train');
+    renderTraining();
+  }
+};
+
+function renderTraining(){
+  const T = getTrain();
+  const dl = isDeload(T.week);
+  const badge = $('twBadge');
+  badge.textContent = 'Semaine ' + T.week + (dl ? ' · DÉCHARGE' : '');
+  badge.className = 'week-badge' + (dl ? ' deload' : '');
+  const g = goalInfo();
+  const goalMsgs = {
+    seche: g.secheMode >= 25
+      ? '🔥 <b>Objectif actuel : sèche agressive (−25%)</b> — récupération réduite : décharge automatique toutes les <b>4 semaines</b> au lieu de 5. Rater des reps certaines semaines est NORMAL, ne force pas au-delà de RPE 8. Si tu stagnes partout, c\'est la diète, pas toi.'
+      : '🔥 <b>Objectif actuel : sèche</b> — tu manges en déficit, donc tu récupères moins. Attends-toi à une progression plus lente : maintenir tes perfs en sèche = victoire. Ne force pas au-delà de RPE 8.',
+    pdm: '💪 <b>Objectif actuel : prise de masse</b> — tu as du carburant, c\'est LE moment de pousser les cibles. Si tu ne progresses pas en PDM, augmente tes calories ou vérifie ton sommeil.',
+    recomp: '🔄 <b>Objectif actuel : recomposition</b> — ta performance à l\'entraînement est ton indicateur n°1 : si les reps montent semaine après semaine, la recomp fonctionne, même si la balance ne bouge pas.',
+    maintien: '⚖️ <b>Objectif actuel : maintien</b> — énergie stable, progression régulière attendue. Profite-en pour soigner la technique.'
+  };
+  $('twGoal').innerHTML = goalMsgs[g.obj] || '👤 Renseigne ton profil (onglet Profil & Résultats) pour adapter les conseils d\'entraînement à ton objectif.';
+  $('twInfo').innerHTML = dl
+    ? '🔵 <b>Semaine de décharge</b> : cibles réduites volontairement (~40%). Ne cherche pas la performance, exécution propre et récupération.'
+    : '🔥 Semaine de travail — vise les cibles, note tes vraies reps. Course du samedi : <b>' + (runType(T.week)==='EF' ? 'Endurance fondamentale' : 'VMA / fractionné') + '</b>.';
+
+  // Charge hebdo (session-RPE : durée × RPE)
+  const L = weekLoad(T);
+  const prevLoads = T.history.map(h => h.load || 0).filter(x => x > 0).slice(-4);
+  let loadHtml = '⚡ <b>Charge de la semaine :</b> ' + L + ' pts <span style="color:var(--muted)">(durée × RPE des séances faites, volley compris)</span>';
+  if (prevLoads.length >= 2){
+    const avg = prevLoads.reduce((a,b) => a+b) / prevLoads.length;
+    const r = avg ? L/avg : 0;
+    if (r > 1.5) loadHtml += ' — <span style="color:var(--red)">🚨 ' + Math.round(r*100) + '% de ton habitude : semaine TRÈS chargée, c\'est là que les blessures arrivent. Allège la fin de semaine ou dors +1h.</span>';
+    else if (r > 1.3) loadHtml += ' — <span style="color:var(--orange)">⚠️ ' + Math.round(r*100) + '% de ton habitude (moyenne ' + Math.round(avg) + ' pts) : surveille la fatigue.</span>';
+    else loadHtml += ' — <span style="color:var(--green)">✅ dans ta zone habituelle (moyenne ' + Math.round(avg) + ' pts).</span>';
+  } else {
+    loadHtml += ' — référence fiable après 2 semaines clôturées.';
+  }
+  $('twLoad').innerHTML = loadHtml;
+
+  // Bloc VMA
+  const vma = getVMA();
+  if (vma){
+    $('vmaVal').textContent = vma.v.toFixed(1).replace('.',',');
+    $('vmaFrac').textContent = speedVMA().replace(' km/h','');
+    $('vmaEF').textContent = paceEF().replace('/km','');
+    const ageJ = Math.round((Date.now() - new Date(vma.d)) / 864e5);
+    $('vmaDate').innerHTML = ageJ > 70
+      ? '⏰ <b style="color:var(--orange)">Dernier test il y a ' + Math.round(ageJ/7) + ' semaines</b> — refais un demi-Cooper le samedi de ta prochaine semaine de décharge pour recalibrer tes allures.'
+      : '📅 Dernier test : ' + new Date(vma.d + 'T12:00').toLocaleDateString('fr-FR', {day:'numeric', month:'long', year:'numeric'}) + ' — prochain conseillé dans ' + Math.max(0, Math.round((70-ageJ)/7)) + ' semaines.';
+  } else {
+    $('vmaVal').textContent = $('vmaFrac').textContent = $('vmaEF').textContent = '—';
+    $('vmaDate').innerHTML = 'Aucun test enregistré — l\'appli utilise les allures par défaut de ton ancien programme (14-15 km/h · 6:10-6:25/km). Fais ton premier test dès que possible : tes allures seront enfin les TIENNES.';
+  }
+
+  $('trainDays').innerHTML = TDAYS.map(([key, titre, sub, warmup, content]) => {
+    const d = T.current['_'+key] || {};
+    const doneBtn = `<button class="day-done${d.done ? ' on' : ''}" onclick="TR.done('${key}')">${d.done ? '✅ Séance faite' : 'Marquer comme faite'}</button>`;
+    // Séance faite → bloc replié (résumé 1 ligne), dépliable au besoin
+    if (d.done && !d.open){
+      let nb = 0;
+      if (Array.isArray(content)) content.forEach(id => (T.current[id]||[]).forEach(v => { if (v !== '' && v != null) nb++; }));
+      const resume = [
+        Array.isArray(content) && nb ? nb + ' séries notées' : '',
+        content === 'run' && d.dist ? d.dist + ' km' : '',
+        d.rpe ? 'RPE ' + d.rpe : ''
+      ].filter(Boolean).join(' · ');
+      return `<div class="card" style="padding:14px 22px"><div class="day-head"><div><h2 style="margin:0">${titre}</h2><span class="note" style="margin:0">✅ Faite${resume ? ' · ' + resume : ''}</span></div>
+        <div style="display:flex;gap:8px"><button class="info-btn" onclick="TR.open('${key}')">🔽 Déplier</button>${doneBtn}</div></div></div>`;
+    }
+    const foldBtn = d.done ? `<button class="info-btn" onclick="TR.open('${key}')">🔼 Replier</button>` : '';
+    let body = '';
+    if (Array.isArray(content)){
+      body = (warmup ? `<div class="warmup">🔥 Échauffement : ${warmup}</div>` : '') + content.map(id => {
+        const e = EXOS[id], t = exoTarget(id, T);
+        const vals = T.current[id] || [];
+        const inputs = Array.from({length: t.sets}, (_, i) =>
+          `<input class="set-input" type="number" min="0" placeholder="S${i+1}" value="${vals[i] ?? ''}" oninput="TR.set('${id}',${i},this.value)">`
+        ).join('');
+        return `<div class="exo-row"><span class="exo-name">${e.n} <button class="info-btn" onclick="TR.timer(${parseInt(e.rec)})">⏱ récup ${e.rec}</button> <button class="info-btn" onclick="TR.info('${id}')">ℹ️ détails</button></span><span class="exo-target">${t.label}</span><span class="exo-sets">${inputs}</span></div>
+        <div class="exo-info" id="info-${id}"><b style="color:var(--orange)">🎯 Consigne :</b> ${e.goal}<br><b style="color:var(--green)">📋 Exécution :</b> ${e.how}</div>`;
+      }).join('') +
+      `<div class="flex" style="margin-top:12px"><div style="max-width:130px"><label>Durée (min)</label><input type="number" min="0" value="${d.dur ?? ''}" oninput="TR.day('${key}','dur',this.value)"></div>
+       <div style="max-width:130px"><label>RPE séance (1-10)</label><input type="number" min="1" max="10" value="${d.rpe ?? ''}" oninput="TR.day('${key}','rpe',this.value)"></div>
+       <div><label>Notes / douleurs</label><input type="text" value="${(d.note ?? '').replace(/"/g,'&quot;')}" placeholder="sensations, douleurs..." oninput="TR.day('${key}','note',this.value)"></div></div>`;
+    } else if (content === 'run'){
+      const rt = runTarget(T);
+      body = (warmup ? `<div class="warmup">🔥 Échauffement : ${warmup}</div>` : '') +
+      `<p style="font-size:.95rem;margin:10px 0"><b>${rt.label}</b></p>
+       <div class="flex"><div><label>Distance (km)</label><input type="number" step="0.01" value="${d.dist ?? ''}" oninput="TR.day('${key}','dist',this.value)"></div>
+       <div style="max-width:130px"><label>Durée (min)</label><input type="number" min="0" value="${d.dur ?? ''}" oninput="TR.day('${key}','dur',this.value)"></div>
+       <div style="max-width:130px"><label>RPE (1-10)</label><input type="number" min="1" max="10" value="${d.rpe ?? ''}" oninput="TR.day('${key}','rpe',this.value)"></div></div>
+       <div style="margin-top:10px"><label>Notes / douleurs (tibia ?)</label><input type="text" value="${(d.note ?? '').replace(/"/g,'&quot;')}" oninput="TR.day('${key}','note',this.value)"></div>
+       <p class="note">⚠️ Douleur tibia/mollet qui persiste après l'échauffement → stoppe, remplace par vélo/marche, et note-le ici. RPE ≤ 7 = progression la semaine suivante.</p>`;
+    } else if (content === 'volley'){
+      body = `<div class="flex" style="margin-top:6px">
+        <div style="max-width:130px"><label>Durée (min)</label><input type="number" min="0" value="${d.dur ?? ''}" oninput="TR.day('${key}','dur',this.value)"></div>
+        <div style="max-width:130px"><label>RPE (1-10)</label><input type="number" min="1" max="10" value="${d.rpe ?? ''}" oninput="TR.day('${key}','rpe',this.value)"></div>
+        <div><label>Note</label><input type="text" value="${(d.note ?? '').replace(/"/g,'&quot;')}" placeholder="match, entraînement, sensations..." oninput="TR.day('${key}','note',this.value)"></div></div>
+      <p class="note" style="margin-top:8px">Durée + RPE servent au calcul de ta charge hebdo — remplis-les même si le contenu vient du club.</p>`;
+    } else {
+      body = `<div style="margin-top:6px"><label>Note</label><input type="text" value="${(d.note ?? '').replace(/"/g,'&quot;')}" placeholder="pas faits, étirements..." oninput="TR.day('${key}','note',this.value)"></div>`;
+    }
+    return `<div class="card"><div class="day-head"><div><h2 style="margin:0">${titre}</h2><span class="note" style="margin:0">${sub}</span></div><div style="display:flex;gap:8px">${foldBtn}${doneBtn}</div></div>${body}</div>`;
+  }).join('');
+
+  // Historique
+  const h = T.history;
+  $('trainHistory').innerHTML = h.length ? `<div style="overflow-x:auto"><table>
+    <thead><tr><th>Semaine</th><th>Séances faites</th><th>Volume total (reps)</th><th>Course (km)</th><th>Bilan</th></tr></thead>
+    <tbody>${h.slice().reverse().map(x =>
+      `<tr><td>S${x.week}${x.deload ? ' <span class="pill b">décharge</span>' : ''}</td><td>${x.done}/7</td><td>${fmt(x.totalReps)}</td><td>${x.km}</td><td style="text-align:left;font-size:.8rem;color:var(--muted)">${x.note}</td></tr>`
+    ).join('')}</tbody></table></div>` : '<div class="empty">Aucune semaine clôturée pour le moment.</div>';
+}
+
+// ================= PERSISTANCE PROFIL =================
+function saveProfil(){
+  localStorage.setItem('cf_profil', JSON.stringify({
+    sexe:$('sexe').value, age:$('age').value, poids:$('poids').value, taille:$('taille').value,
+    activite:$('activite').value, objectifPrincipal:$('objectifPrincipal').value,
+    secheMode:$('secheMode').value, pdmMode:$('pdmMode').value, ajust:$('ajust').value
+  }));
+}
+function loadProfil(){
+  try{
+    const s = JSON.parse(localStorage.getItem('cf_profil'));
+    if (!s) return;
+    ['sexe','age','poids','taille','activite','objectifPrincipal','secheMode','pdmMode','ajust'].forEach(k => { if (s[k] != null && s[k] !== '') $(k).value = s[k]; });
+    if (s.age && s.poids && s.taille) calculer();
+  }catch(e){}
+}
+function resetProfil(){
+  if (!confirm('Réinitialiser le profil ?')) return;
+  localStorage.removeItem('cf_profil');
+  ['age','poids','taille'].forEach(k => $(k).value = '');
+  $('ajust').value = 0;
+  $('resultats').classList.add('hidden'); $('profilEmpty').classList.remove('hidden');
+  $('objectifsContent').classList.add('hidden'); $('objectifsEmpty').classList.remove('hidden');
+  $('repasContent').classList.add('hidden'); $('repasEmpty').classList.remove('hidden');
+  P = null;
+  renderTraining(); renderCoachPoids(); // rafraîchit bandeau objectif + analyse
+}
+
+// ================= PWA : SERVICE WORKER + NOTIFICATIONS =================
+const VAPID_PUBLIC = 'BPt5r_nKe0wyU4sm6IzXkQxXaynMBr-ZbE9wlNEOqc8BKWOYcYF9P47PIAY2eGKG6JAZ15YV_lMhj3rlq9sK-DI';
+
+if ('serviceWorker' in navigator && location.protocol.indexOf('http') === 0){
+  navigator.serviceWorker.register('sw.js').catch(e => console.warn('SW:', e));
+}
+
+function urlB64ToUint8(base64){
+  const pad = '='.repeat((4 - base64.length % 4) % 4);
+  const b = (base64 + pad).replace(/-/g, '+').replace(/_/g, '/');
+  const raw = atob(b);
+  return Uint8Array.from([...raw].map(c => c.charCodeAt(0)));
+}
+
+async function enableNotifs(){
+  const st = $('notifStatus');
+  if (location.protocol.indexOf('http') !== 0){
+    st.innerHTML = '❌ Les notifications ne fonctionnent que sur la version hébergée (https), pas en fichier local.'; return;
+  }
+  if (!('serviceWorker' in navigator) || !('PushManager' in window) || !('Notification' in window)){
+    st.innerHTML = '❌ Push non supporté dans ce contexte. Sur iPhone : iOS 16.4+, installe l\'appli sur l\'écran d\'accueil (Safari → Partager → Sur l\'écran d\'accueil) et ouvre-la <b>depuis son icône</b>, puis réessaie.'; return;
+  }
+  try{
+    const perm = await Notification.requestPermission();
+    if (perm !== 'granted'){ st.innerHTML = '❌ Permission refusée. Réglages iPhone → Notifications → Coach Fit pour l\'autoriser.'; return; }
+    const reg = await navigator.serviceWorker.ready;
+    let sub = await reg.pushManager.getSubscription();
+    if (!sub) sub = await reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: urlB64ToUint8(VAPID_PUBLIC) });
+    $('subJson').value = JSON.stringify(sub.toJSON(), null, 2);
+    $('subBox').classList.remove('hidden');
+    st.innerHTML = '✅ Notifications activées sur cet appareil ! <b>Dernière étape :</b> copie le code ci-dessous et colle-le dans le fichier <b>subs.json</b> de ton GitHub (entre les crochets). Sans ça, rien ne sera envoyé.';
+  }catch(e){
+    st.innerHTML = '⚠️ Erreur : ' + e.message;
+  }
+}
+function copySub(){
+  navigator.clipboard.writeText($('subJson').value).then(() => alert('📋 Copié ! Va sur GitHub → subs.json → ✏️ modifier → colle entre les crochets [ ] → Commit.'));
+}
+
+// ================= INIT =================
+$('wDate').value = new Date().toISOString().slice(0,10);
+loadProfil();
+renderWeights();
+renderTraining();
+window.addEventListener('resize', renderChart);
+</script>
+
+<script type="module">
+// ================= SYNCHRONISATION FIREBASE =================
+// ⚙️ CONFIGURATION : remplace les valeurs COLLE_ICI par celles de TON projet Firebase
+// (console.firebase.google.com → ton projet → ⚙️ Paramètres → tes applications → Config)
+const FIREBASE_CONFIG = {
+  apiKey: "COLLE_ICI",
+  authDomain: "COLLE_ICI",
+  projectId: "COLLE_ICI",
+  storageBucket: "COLLE_ICI",
+  messagingSenderId: "COLLE_ICI",
+  appId: "COLLE_ICI"
+};
+
+const KEYS = ['cf_profil', 'cf_weights', 'cf_train', 'cf_vma'];
+const st = document.getElementById('cloudStatus');
+window.cfCloud = { login(){ alert('Configure d\'abord Firebase (voir guide).'); }, signup(){ this.login(); }, logout(){} };
+
+if (!FIREBASE_CONFIG.apiKey || FIREBASE_CONFIG.apiKey === 'COLLE_ICI'){
+  st.innerHTML = '⚙️ <b>Firebase pas encore configuré</b> — l\'appli fonctionne, mais tes données restent sur cet appareil uniquement. Suis l\'étape Firebase du guide d\'installation pour activer la sauvegarde cloud.';
+  document.getElementById('cloudForm').classList.add('hidden');
+} else {
+try {
+  const { initializeApp } = await import('https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js');
+  const { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged } =
+    await import('https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js');
+  const { getFirestore, doc, getDoc, setDoc } =
+    await import('https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js');
+
+  const app = initializeApp(FIREBASE_CONFIG);
+  const auth = getAuth(app), db = getFirestore(app);
+  let uid = null, timer = null, pulling = false;
+  const orig = localStorage.setItem.bind(localStorage);
+
+  function collect(){
+    const o = {};
+    KEYS.forEach(k => { const v = localStorage.getItem(k); if (v != null) o[k] = v; });
+    return o;
+  }
+  async function push(){
+    if (!uid || pulling) return;
+    try{
+      await setDoc(doc(db, 'users', uid), { data: collect(), updatedAt: Date.now() });
+      st.textContent = '☁️ Synchronisé ✓ (' + new Date().toLocaleTimeString('fr-FR') + ')';
+    }catch(e){ st.textContent = '⚠️ Erreur de sync : ' + e.message; }
+  }
+  // toute sauvegarde locale déclenche une sauvegarde cloud (1,5 s après la dernière modif)
+  localStorage.setItem = (k, v) => {
+    orig(k, v);
+    if (KEYS.includes(k) && uid){ clearTimeout(timer); timer = setTimeout(push, 1500); }
+  };
+
+  onAuthStateChanged(auth, async user => {
+    uid = user ? user.uid : null;
+    document.getElementById('cloudLogged').classList.toggle('hidden', !user);
+    document.getElementById('cloudForm').classList.toggle('hidden', !!user);
+    if (!user){ st.textContent = 'Non connecté — tes données restent sur cet appareil. Connecte-toi pour les sauvegarder et les retrouver partout.'; return; }
+    document.getElementById('cloudEmailShow').textContent = user.email;
+    st.textContent = '☁️ Connecté — récupération de tes données...';
+    try{
+      const snap = await getDoc(doc(db, 'users', uid));
+      if (snap.exists()){
+        pulling = true;
+        Object.entries(snap.data().data || {}).forEach(([k, v]) => orig(k, v));
+        pulling = false;
+        st.textContent = '☁️ Données restaurées ✓';
+        if (!sessionStorage.getItem('cfPulled')){ sessionStorage.setItem('cfPulled', '1'); location.reload(); }
+      } else {
+        await push(); // premier compte : on envoie les données locales
+      }
+    }catch(e){ st.textContent = '⚠️ ' + e.message; }
+  });
+
+  window.cfCloud = {
+    async signup(){
+      try{ await createUserWithEmailAndPassword(auth, document.getElementById('cloudEmail').value.trim(), document.getElementById('cloudPass').value); }
+      catch(e){ alert('Création impossible : ' + e.message); }
+    },
+    async login(){
+      try{ await signInWithEmailAndPassword(auth, document.getElementById('cloudEmail').value.trim(), document.getElementById('cloudPass').value); }
+      catch(e){ alert('Connexion impossible : ' + e.message); }
+    },
+    async logout(){ sessionStorage.removeItem('cfPulled'); await signOut(auth); }
+  };
+}catch(e){
+  st.textContent = '⚠️ Firebase inaccessible (hors ligne ?) : ' + e.message;
+}
+}
+</script>
+</body>
+</html>
